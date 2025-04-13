@@ -8,73 +8,73 @@ body {
 
 @layer base {
   :root {
-    --background: 20 14.3% 46.1%;
-    --foreground: 60 9.1% 95.1%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 40 77.3% 47.8%;
-    --primary-foreground: 46.9 72.2% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 40 77.3% 47.8%;
-    --accent-foreground: 46.9 72.2% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    --background: 0 0% 100%; /* White background */
+    --foreground: 0 0% 9%; /* Dark text for readability */
+    --card: 0 0% 100%; /* White card */
+    --card-foreground: 0 0% 9%; /* Dark text on card */
+    --popover: 0 0% 100%; /* White popover */
+    --popover-foreground: 0 0% 9%; /* Dark text on popover */
+    --primary: 160 100% 30%; /* Teal primary color */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+    --secondary: 210 40% 96.1%; /* Light gray secondary */
+    --secondary-foreground: 0 0% 9%; /* Dark text on secondary */
+    --muted: 210 40% 96.1%; /* Light gray muted */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Gray text muted */
+    --accent: 40 77.3% 47.8%; /* Accented teal color */
+    --accent-foreground: 0 0% 100%; /* White text on accent */
+    --destructive: 0 84.2% 60.2%; /* Red destructive color */
+    --destructive-foreground: 0 0% 98%; /* White text on destructive */
+    --border: 240 5.9% 90%; /* Light gray border */
+    --input: 240 5.9% 90%; /* Light gray input */
+    --ring: 40 77.3% 47.8%; /* Teal ring color */
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    --sidebar-background: 39 10.8% 19%;
-    --sidebar-foreground: 60 9.1% 95.1%;
-    --sidebar-primary: 40 77.3% 47.8%;
-    --sidebar-primary-foreground: 46.9 72.2% 98%;
+    --sidebar-background: 0 0% 98%; /* Very light gray sidebar background */
+    --sidebar-foreground: 0 0% 9%; /* Dark text on sidebar */
+    --sidebar-primary: 160 100% 30%; /* Teal sidebar primary color */
+    --sidebar-primary-foreground: 0 0% 100%; /* White text on sidebar primary */
     --sidebar-accent: 26.3 85% 97.1%;
     --sidebar-accent-foreground: 26.3 85% 5.9%;
-    --sidebar-border: 30 10% 76.1%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-border: 240 5.9% 90%; /* Light gray sidebar border */
+    --sidebar-ring: 40 77.3% 47.8%; /* Teal sidebar ring */
   }
   .dark {
-    --background: 20 14.3% 46.1%;
-    --foreground: 60 9.1% 95.1%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 40 77.3% 47.8%;
-    --primary-foreground: 46.9 72.2% 98%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 40 77.3% 47.8%;
-    --accent-foreground: 46.9 72.2% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    --background: 0 0% 15%; /* Dark background */
+    --foreground: 0 0% 85%; /* Lighter text for dark mode */
+    --card: 0 0% 20%; /* Dark card */
+    --card-foreground: 0 0% 85%; /* Lighter text on card */
+    --popover: 0 0% 20%; /* Dark popover */
+    --popover-foreground: 0 0% 85%; /* Lighter text on popover */
+    --primary: 160 100% 30%; /* Teal primary color */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+    --secondary: 0 0% 30%; /* Dark gray secondary */
+    --secondary-foreground: 0 0% 85%; /* Lighter text on secondary */
+    --muted: 0 0% 30%; /* Dark gray muted */
+    --muted-foreground: 0 0% 60%; /* Gray text muted */
+    --accent: 40 77.3% 47.8%; /* Accented teal color */
+    --accent-foreground: 0 0% 100%; /* White text on accent */
+    --destructive: 0 62.8% 30.6%; /* Dark red destructive color */
+    --destructive-foreground: 0 0% 85%; /* Lighter text on destructive */
+    --border: 0 0% 40%; /* Dark gray border */
+    --input: 0 0% 30%; /* Dark gray input */
+    --ring: 40 77.3% 47.8%; /* Teal ring color */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --sidebar-background: 39 10.8% 19%;
-    --sidebar-foreground: 60 9.1% 95.1%;
-    --sidebar-primary: 40 77.3% 47.8%;
-    --sidebar-primary-foreground: 46.9 72.2% 98%;
+    --sidebar-background: 0 0% 25%; /* Dark gray sidebar background */
+    --sidebar-foreground: 0 0% 85%; /* Lighter text on sidebar */
+    --sidebar-primary: 160 100% 30%; /* Teal sidebar primary color */
+    --sidebar-primary-foreground: 0 0% 100%; /* White text on sidebar primary */
     --sidebar-accent: 26.3 85% 97.1%;
     --sidebar-accent-foreground: 26.3 85% 5.9%;
-    --sidebar-border: 30 10% 76.1%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-border: 0 0% 40%; /* Dark gray sidebar border */
+    --sidebar-ring: 40 77.3% 47.8%; /* Teal sidebar ring */
   }
 }
 
@@ -86,5 +86,3 @@ body {
     @apply bg-background text-foreground;
   }
 }
-
-
