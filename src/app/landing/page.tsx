@@ -87,7 +87,7 @@ export default function LandingPage() {
                                 <div className="flex flex-col items-center">
                                     <Avatar className="h-32 w-32 mb-4">
                                         <AvatarImage src={saloon.image} alt={saloon.name} className="object-cover" />
-                                        <AvatarFallback>{saloon.name.substring(0, 2)}</AvatarFallback>
+                                        <AvatarFallback>{saloon.name ? saloon.name.substring(0, 2) : 'SS'}</AvatarFallback>
                                     </Avatar>
                                     <h2 className="text-lg font-semibold">{saloon.name}</h2>
                                     <p className="text-sm text-muted-foreground">{saloon.location}</p>
