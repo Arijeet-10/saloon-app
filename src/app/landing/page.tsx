@@ -1,51 +1,71 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Star } from "lucide-react";
 import Link from 'next/link';
-
-const saloonsData = [
-    {
-        id: 1,
-        name: "The Barber Shop",
-        location: "123 Main St, Anytown",
-        rating: 4.5,
-        image: "https://picsum.photos/id/237/300/200",
-    },
-    {
-        id: 2,
-        name: "Hair Today, Gone Tomorrow",
-        location: "456 Elm St, Sometown",
-        rating: 3.8,
-        image: "https://picsum.photos/id/238/300/200",
-    },
-    {
-        id: 3,
-        name: "Shear Perfection",
-        location: "789 Oak St, Anytown",
-        rating: 4.2,
-        image: "https://picsum.photos/id/239/300/200",
-    },
-];
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { app } from "@/lib/firebase";
 
 export default function LandingPage() {
     const [searchQuery, setSearchQuery] = useState("");
-    const [saloons, setSaloons] = useState(saloonsData);
+    const [saloons, setSaloons] = useState([]);
+    const [allSaloons, setAllSaloons] = useState([]);
+
+    useEffect(() => {
+        const fetchSaloons = async () => {
+            const db = getFirestore(app);
+            const saloonsCollection = collection(db, "saloons");
+            const saloonSnapshot = await getDocs(saloonsCollection);
+            const saloonList = saloonSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // Dummy data for saloons (to be replaced with actual data)
+            const dummySaloons = [
+                {
+                    id: 1,
+                    name: "The Barber Shop",
+                    location: "123 Main St, Anytown",
+                    rating: 4.5,
+                    image: "https://picsum.photos/id/237/300/200",
+                },
+                {
+                    id: 2,
+                    name: "Hair Today, Gone Tomorrow",
+                    location: "456 Elm St, Sometown",
+                    rating: 3.8,
+                    image: "https://picsum.photos/id/238/300/200",
+                },
+                {
+                    id: 3,
+                    name: "Shear Perfection",
+                    location: "789 Oak St, Anytown",
+                    rating: 4.2,
+                    image: "https://picsum.photos/id/239/300/200",
+                },
+            ];
+
+            const combinedSaloons = [...dummySaloons, ...saloonList];
+
+            setAllSaloons(combinedSaloons);
+            setSaloons(combinedSaloons); // Initialize with all saloons
+        };
+
+        fetchSaloons();
+    }, []);
 
     const handleSearch = (event) => {
         const query = event.target.value;
         setSearchQuery(query);
 
         if (query) {
-            const filteredSaloons = saloonsData.filter(saloon =>
+            const filteredSaloons = allSaloons.filter(saloon =>
                 saloon.location.toLowerCase().includes(query.toLowerCase())
             );
             setSaloons(filteredSaloons);
         } else {
-            setSaloons(saloonsData);
+            setSaloons(allSaloons);
         }
     };
 
