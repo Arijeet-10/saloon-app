@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 // Dummy data for saloon services
 const services = {
@@ -31,6 +32,10 @@ export default function SaloonServicePage() {
 
     const handleAddService = (service) => {
         setSelectedServices([...selectedServices, service]);
+    };
+
+    const handleRemoveService = (serviceToRemove) => {
+        setSelectedServices(selectedServices.filter(service => service.id !== serviceToRemove.id));
     };
 
     const totalCost = selectedServices.reduce((sum, service) => sum + service.price, 0);
@@ -70,9 +75,14 @@ export default function SaloonServicePage() {
                             ) : (
                                 <div className="grid gap-4">
                                     {selectedServices.map((service) => (
-                                        <div key={service.id} className="border rounded-md p-4">
-                                            <h3 className="text-lg font-semibold">{service.name}</h3>
-                                            <p className="text-sm text-muted-foreground">Price: ${service.price}</p>
+                                        <div key={service.id} className="border rounded-md p-4 flex items-center justify-between">
+                                            <div>
+                                                <h3 className="text-lg font-semibold">{service.name}</h3>
+                                                <p className="text-sm text-muted-foreground">Price: ${service.price}</p>
+                                            </div>
+                                            <Button size="icon" variant="ghost" onClick={() => handleRemoveService(service)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
                                         </div>
                                     ))}
                                     <div className="border-t pt-4">
