@@ -3,13 +3,14 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyCN0qnRcLxenT6y8eKAydf-eihl7lfpzUU",
+  authDomain: "saloon-booking-app-27eff.firebaseapp.com",
+  databaseURL: "https://saloon-booking-app-27eff-default-rtdb.firebaseio.com",
+  projectId: "saloon-booking-app-27eff",
+  storageBucket: "saloon-booking-app-27eff.firebasestorage.app",
+  messagingSenderId: "711821315438",
+  appId: "1:711821315438:web:040b87560da1b42c4f457f",
+  measurementId: "G-YBF06WJ1Z9"
 };
 
 // Initialize Firebase

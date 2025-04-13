@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
+import { signInWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [firebaseApp, setFirebaseApp] = useState<any>(null);
   const router = useRouter();
+    const { toast } = useToast();
 
   useEffect(() => {
     const loadFirebase = async () => {
@@ -41,6 +43,29 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (e: any) {
       setError(e.message);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+
+    if (!firebaseApp) {
+      setError("Firebase not initialized.");
+      return;
+    }
+
+    try {
+      const auth = getAuth(firebaseApp);
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      router.push("/dashboard");
+    } catch (e: any) {
+      setError(e.message);
+          toast({
+              title: "Error signing in with Google",
+              description: e.message,
+              variant: "destructive",
+          });
     }
   };
 
@@ -79,6 +104,14 @@ export default function LoginPage() {
               Log In
             </Button>
           </form>
+            <div className="flex items-center">
+                <div className="border-t border-border flex-grow"></div>
+                <div className="mx-4 text-muted-foreground">Or</div>
+                <div className="border-t border-border flex-grow"></div>
+            </div>
+          <Button type="button" className="w-full mt-4" onClick={handleGoogleSignIn}>
+            Sign In with Google
+          </Button>
           <p className="text-sm text-center">
             Don't have an account?{" "}
             <a href="/signup" className="text-primary hover:underline">
@@ -90,6 +123,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-
-    
