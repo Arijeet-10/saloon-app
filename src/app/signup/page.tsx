@@ -9,36 +9,22 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
+import { app } from "@/lib/firebase";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("customer"); // Default role
-    const [firebaseApp, setFirebaseApp] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const loadFirebase = async () => {
-      const firebase = await import('../../lib/firebase');
-      setFirebaseApp(firebase.app);
-    };
-
-    loadFirebase();
-  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
 
-    if (!firebaseApp) {
-      setError("Firebase not initialized.");
-      return;
-    }
-
     try {
-      const auth = getAuth(firebaseApp);
+      const auth = getAuth(app);
       await createUserWithEmailAndPassword(auth, email, password);
       // Here, you would typically save the user's role to a database
       // associated with their Firebase UID.  Since we don't have a DB setup, we skip this.
@@ -46,34 +32,29 @@ export default function SignupPage() {
       router.push("/landing"); // Redirect to landing after successful signup
     } catch (e: any) {
       setError(e.message);
-              toast({
-                  title: "Error signing up",
-                  description: e.message,
-                  variant: "destructive",
-              });
+      toast({
+        title: "Error signing up",
+        description: e.message,
+        variant: "destructive",
+      });
     }
   };
 
   const handleGoogleSignIn = async () => {
     setError(null);
 
-    if (!firebaseApp) {
-      setError("Firebase not initialized.");
-      return;
-    }
-
     try {
-      const auth = getAuth(firebaseApp);
+      const auth = getAuth(app);
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       router.push("/landing"); // Or wherever you want to redirect after signup
     } catch (e: any) {
       setError(e.message);
-        toast({
-            title: "Error signing up with Google",
-            description: e.message,
-            variant: "destructive",
-        });
+      toast({
+        title: "Error signing up with Google",
+        description: e.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -116,7 +97,7 @@ export default function SignupPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="customer">Customer</SelectItem>
-                  <SelectItem value="saloon owner">Saloon Owner</SelectItem>
+                  {/*  <SelectItem value="saloon owner">Saloon Owner</SelectItem> */}
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
@@ -127,11 +108,11 @@ export default function SignupPage() {
               Sign Up
             </Button>
           </form>
-            <div className="flex items-center">
-                <div className="border-t border-border flex-grow"></div>
-                <div className="mx-4 text-muted-foreground">Or</div>
-                <div className="border-t border-border flex-grow"></div>
-            </div>
+          <div className="flex items-center">
+            <div className="border-t border-border flex-grow"></div>
+            <div className="mx-4 text-muted-foreground">Or</div>
+            <div className="border-t border-border flex-grow"></div>
+          </div>
           <Button type="button" className="w-full mt-4" onClick={handleGoogleSignIn}>
             Sign Up with Google
           </Button>
@@ -140,9 +121,15 @@ export default function SignupPage() {
             <a href="/login" className="text-primary hover:underline">
               Log in
             </a>
+            <br />
+            Are you a saloon owner?{" "}
+            <a href="/saloon-owner-signup" className="text-primary hover:underline">
+              Sign up here
+            </a>
           </p>
         </CardContent>
       </Card>
     </div>
   );
 }
+
