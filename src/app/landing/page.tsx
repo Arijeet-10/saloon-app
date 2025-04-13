@@ -29,6 +29,8 @@ export default function LandingPage() {
                     location: "123 Main St, Anytown",
                     rating: 4.5,
                     image: "https://picsum.photos/id/237/300/200",
+                    description: "A classic barber shop with a modern twist.",
+                    openingHours: "Mon-Sat: 9am - 7pm"
                 },
                 {
                     id: 2,
@@ -36,6 +38,8 @@ export default function LandingPage() {
                     location: "456 Elm St, Sometown",
                     rating: 3.8,
                     image: "https://picsum.photos/id/238/300/200",
+                    description: "Trendy salon offering the latest hair styles.",
+                    openingHours: "Tue-Sun: 10am - 8pm"
                 },
                 {
                     id: 3,
@@ -43,6 +47,8 @@ export default function LandingPage() {
                     location: "789 Oak St, Anytown",
                     rating: 4.2,
                     image: "https://picsum.photos/id/239/300/200",
+                    description: "Providing shear perfection with every cut.",
+                    openingHours: "Mon-Fri: 8am - 6pm"
                 },
             ];
 
@@ -82,7 +88,7 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {saloons.map((saloon) => (
                     <Link href={`/saloon/${saloon.id}`} key={saloon.id}>
-                        <Card>
+                        <Card className="hover:shadow-lg transition-shadow duration-200">
                             <CardContent className="p-4">
                                 <div className="flex flex-col items-center">
                                     <Avatar className="h-32 w-32 mb-4">
@@ -95,6 +101,8 @@ export default function LandingPage() {
                                         <Star className="h-4 w-4 text-yellow-500 mr-1" />
                                         <span>{saloon.rating}</span>
                                     </div>
+                                    <p className="text-xs text-gray-500 mt-2">{saloon.description}</p>
+                                    <p className="text-xs text-gray-500">{saloon.openingHours}</p>
                                 </div>
                             </CardContent>
                         </Card>
