@@ -1,8 +1,9 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 // Dummy data for saloon services
 const services = {
@@ -26,23 +27,63 @@ export default function SaloonServicePage() {
     const saloonId = parseInt(params.id as string);
     const saloonServices = services[saloonId] || [];
 
+    const [selectedServices, setSelectedServices] = useState([]);
+
+    const handleAddService = (service) => {
+        setSelectedServices([...selectedServices, service]);
+    };
+
+    const totalCost = selectedServices.reduce((sum, service) => sum + service.price, 0);
+
     return (
         <div className="container mx-auto py-10">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Saloon Services</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid gap-4">
-                        {saloonServices.map((service) => (
-                            <div key={service.id} className="border rounded-md p-4">
-                                <h3 className="text-lg font-semibold">{service.name}</h3>
-                                <p className="text-sm text-muted-foreground">Price: ${service.price}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Saloon Services</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid gap-4">
+                                {saloonServices.map((service) => (
+                                    <div key={service.id} className="border rounded-md p-4 flex items-center justify-between">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">{service.name}</h3>
+                                            <p className="text-sm text-muted-foreground">Price: ${service.price}</p>
+                                        </div>
+                                        <Button size="sm" onClick={() => handleAddService(service)}>Add Service</Button>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Selected Services</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {selectedServices.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">No services selected.</p>
+                            ) : (
+                                <div className="grid gap-4">
+                                    {selectedServices.map((service) => (
+                                        <div key={service.id} className="border rounded-md p-4">
+                                            <h3 className="text-lg font-semibold">{service.name}</h3>
+                                            <p className="text-sm text-muted-foreground">Price: ${service.price}</p>
+                                        </div>
+                                    ))}
+                                    <div className="border-t pt-4">
+                                        <h3 className="text-lg font-semibold">Total Cost: ${totalCost}</h3>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
         </div>
     );
 }
