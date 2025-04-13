@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -16,6 +17,7 @@ export default function SignupPage() {
     const [firebaseApp, setFirebaseApp] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     const loadFirebase = async () => {
@@ -44,6 +46,34 @@ export default function SignupPage() {
       router.push("/login"); // Redirect to login after successful signup
     } catch (e: any) {
       setError(e.message);
+              toast({
+                  title: "Error signing up",
+                  description: e.message,
+                  variant: "destructive",
+              });
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+
+    if (!firebaseApp) {
+      setError("Firebase not initialized.");
+      return;
+    }
+
+    try {
+      const auth = getAuth(firebaseApp);
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      router.push("/dashboard"); // Or wherever you want to redirect after signup
+    } catch (e: any) {
+      setError(e.message);
+        toast({
+            title: "Error signing up with Google",
+            description: e.message,
+            variant: "destructive",
+        });
     }
   };
 
@@ -97,6 +127,14 @@ export default function SignupPage() {
               Sign Up
             </Button>
           </form>
+            <div className="flex items-center">
+                <div className="border-t border-border flex-grow"></div>
+                <div className="mx-4 text-muted-foreground">Or</div>
+                <div className="border-t border-border flex-grow"></div>
+            </div>
+          <Button type="button" className="w-full mt-4" onClick={handleGoogleSignIn}>
+            Sign Up with Google
+          </Button>
           <p className="text-sm text-center">
             Already have an account?{" "}
             <a href="/login" className="text-primary hover:underline">
@@ -108,6 +146,4 @@ export default function SignupPage() {
     </div>
   );
 }
-
-
     
