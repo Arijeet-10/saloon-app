@@ -22,8 +22,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { signOut } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { initializeApp } from "firebase/app";
-import { app, firebaseConfig } from "@/lib/firebase";
+import { app } from "@/lib/firebase";
+import getConfig from 'next/config';
 
+const { publicRuntimeConfig } = getConfig();
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -32,7 +34,15 @@ export default function Dashboard() {
   useEffect(() => {
     // Initialize Firebase if it hasn't been already
     if (!app) {
-        initializeApp(firebaseConfig);
+        initializeApp({
+            apiKey: publicRuntimeConfig.NEXT_PUBLIC_FIREBASE_API_KEY,
+            authDomain: publicRuntimeConfig.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+            projectId: publicRuntimeConfig.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+            storageBucket: publicRuntimeConfig.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+            messagingSenderId: publicRuntimeConfig.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+            appId: publicRuntimeConfig.NEXT_PUBLIC_FIREBASE_APP_ID,
+            measurementId: publicRuntimeConfig.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+        });
     }
 
     const auth = getAuth();
@@ -110,4 +120,3 @@ export default function Dashboard() {
     </SidebarProvider>
   );
 }
-

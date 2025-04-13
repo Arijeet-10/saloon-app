@@ -14,7 +14,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+let app;
+try {
+    app = initializeApp(firebaseConfig);
+} catch (e: any) {
+    console.error("Firebase initialization error", e.message)
+}
 export const analytics = getAnalytics(app);
 
 export { app };
