@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { signInWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { app } from "@/lib/firebase";
+import { getFirestore, doc, getDoc } from "firebase/firestore"; // Import Firestore functions
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -26,19 +27,27 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Here, you would typically fetch the user's role from a database
-      // associated with their Firebase UID. For now, we'll just hardcode a role for testing.
-      // const role = await fetchUserRoleFromDatabase(user.uid);  //Example function
+      // Get a reference to the Firestore database
+      const db = getFirestore(app);
 
-      // Hardcoded role for demonstration
-      const role = "saloon owner"; // Replace with actual role fetching logic
+      // Fetch the user's profile from Firestore (assuming you store roles there)
+      const userDocRef = doc(db, "users", user.uid); // Use "users" collection
+      const userDoc = await getDoc(userDocRef);
 
-      if (role === "saloon owner") {
-        router.push("/saloon-owner-dashboard");
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const role = userData?.role; // Assuming you store the role in a "role" field
+
+        if (role === "saloon owner") {
+          router.push("/saloon-owner-dashboard");
+        } else {
+          router.push("/landing");
+        }
       } else {
-        router.push("/landing");
+        // Handle the case where the user's profile is not found
+        console.error("User profile not found in Firestore");
+        setError("User profile not found. Contact support.");
       }
-
     } catch (e: any) {
       setError(e.message);
            toast({
@@ -58,17 +67,26 @@ export default function LoginPage() {
       const userCredential = await signInWithPopup(auth, provider);
       const user = userCredential.user;
 
-      // Here, you would typically fetch the user's role from a database
-      // associated with their Firebase UID. For now, we'll just hardcode a role for testing.
-      // const role = await fetchUserRoleFromDatabase(user.uid);  //Example function
+      // Get a reference to the Firestore database
+      const db = getFirestore(app);
 
-      // Hardcoded role for demonstration
-      const role = "saloon owner"; // Replace with actual role fetching logic
+      // Fetch the user's profile from Firestore (assuming you store roles there)
+      const userDocRef = doc(db, "users", user.uid); // Use "users" collection
+      const userDoc = await getDoc(userDocRef);
 
-      if (role === "saloon owner") {
-        router.push("/saloon-owner-dashboard");
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const role = userData?.role; // Assuming you store the role in a "role" field
+
+        if (role === "saloon owner") {
+          router.push("/saloon-owner-dashboard");
+        } else {
+          router.push("/landing");
+        }
       } else {
-        router.push("/landing");
+        // Handle the case where the user's profile is not found
+        console.error("User profile not found in Firestore");
+        setError("User profile not found. Contact support.");
       }
     } catch (e: any) {
       setError(e.message);
