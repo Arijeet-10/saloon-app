@@ -8,57 +8,68 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { signInWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
+import { app } from "@/lib/firebase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [firebaseApp, setFirebaseApp] = useState<any>(null);
   const router = useRouter();
     const { toast } = useToast();
-
-  useEffect(() => {
-    const loadFirebase = async () => {
-      const firebase = await import('../../lib/firebase');
-      setFirebaseApp(firebase.app);
-    };
-
-    loadFirebase();
-  }, []);
-
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
 
-    if (!firebaseApp) {
-      setError("Firebase not initialized.");
-      return;
-    }
-
     try {
-      const auth = getAuth(firebaseApp);
-      await signInWithEmailAndPassword(auth, email, password);
-      // Redirect based on role (example, you might need to fetch the user's role from a database)
-      router.push("/landing");
+      const auth = getAuth(app);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Here, you would typically fetch the user's role from a database
+      // associated with their Firebase UID. For now, we'll just hardcode a role for testing.
+      // const role = await fetchUserRoleFromDatabase(user.uid);  //Example function
+
+      // Hardcoded role for demonstration
+      const role = "saloon owner"; // Replace with actual role fetching logic
+
+      if (role === "saloon owner") {
+        router.push("/saloon-owner-dashboard");
+      } else {
+        router.push("/landing");
+      }
+
     } catch (e: any) {
       setError(e.message);
+           toast({
+               title: "Error signing in",
+               description: e.message,
+               variant: "destructive",
+           });
     }
   };
 
   const handleGoogleSignIn = async () => {
     setError(null);
 
-    if (!firebaseApp) {
-      setError("Firebase not initialized.");
-      return;
-    }
-
     try {
-      const auth = getAuth(firebaseApp);
+      const auth = getAuth(app);
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      router.push("/landing");
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+
+      // Here, you would typically fetch the user's role from a database
+      // associated with their Firebase UID. For now, we'll just hardcode a role for testing.
+      // const role = await fetchUserRoleFromDatabase(user.uid);  //Example function
+
+      // Hardcoded role for demonstration
+      const role = "saloon owner"; // Replace with actual role fetching logic
+
+      if (role === "saloon owner") {
+        router.push("/saloon-owner-dashboard");
+      } else {
+        router.push("/landing");
+      }
     } catch (e: any) {
       setError(e.message);
           toast({
@@ -123,4 +134,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
