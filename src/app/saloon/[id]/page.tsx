@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -25,6 +25,7 @@ const services = {
 
 export default function SaloonServicePage() {
     const params = useParams();
+    const router = useRouter();
     const saloonId = parseInt(params.id as string);
     const saloonServices = services[saloonId] || [];
 
@@ -39,6 +40,10 @@ export default function SaloonServicePage() {
     };
 
     const totalCost = selectedServices.reduce((sum, service) => sum + service.price, 0);
+
+    const handleBookAppointment = () => {
+        router.push(`/saloon/${saloonId}/book`);
+    };
 
     return (
         <div className="container mx-auto py-10">
@@ -92,6 +97,9 @@ export default function SaloonServicePage() {
                             )}
                         </CardContent>
                     </Card>
+                    <Button className="w-full mt-4" onClick={handleBookAppointment}>
+                        Book Appointment
+                    </Button>
                 </div>
             </div>
         </div>
