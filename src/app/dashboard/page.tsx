@@ -21,6 +21,8 @@ import { Icons } from "@/components/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { signOut } from "firebase/auth";
 import { Button } from "@/components/ui/button";
+import { initializeApp } from "firebase/app";
+import { app, firebaseConfig } from "@/lib/firebase";
 
 
 export default function Dashboard() {
@@ -28,6 +30,11 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
+    // Initialize Firebase if it hasn't been already
+    if (!app) {
+        initializeApp(firebaseConfig);
+    }
+
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -103,3 +110,4 @@ export default function Dashboard() {
     </SidebarProvider>
   );
 }
+
