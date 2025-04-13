@@ -1,13 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Star } from "lucide-react";
 import Link from 'next/link';
 
-const saloons = [
+const saloonsData = [
     {
         id: 1,
         name: "The Barber Shop",
@@ -18,7 +18,7 @@ const saloons = [
     {
         id: 2,
         name: "Hair Today, Gone Tomorrow",
-        location: "456 Elm St, Anytown",
+        location: "456 Elm St, Sometown",
         rating: 3.8,
         image: "https://picsum.photos/id/238/300/200",
     },
@@ -32,10 +32,32 @@ const saloons = [
 ];
 
 export default function LandingPage() {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [saloons, setSaloons] = useState(saloonsData);
+
+    const handleSearch = (event) => {
+        const query = event.target.value;
+        setSearchQuery(query);
+
+        if (query) {
+            const filteredSaloons = saloonsData.filter(saloon =>
+                saloon.location.toLowerCase().includes(query.toLowerCase())
+            );
+            setSaloons(filteredSaloons);
+        } else {
+            setSaloons(saloonsData);
+        }
+    };
+
     return (
         <div className="container mx-auto py-10">
             <div className="mb-6">
-                <Input type="text" placeholder="Search for saloons..." />
+                <Input
+                    type="text"
+                    placeholder="Search for saloons by location..."
+                    value={searchQuery}
+                    onChange={handleSearch}
+                />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {saloons.map((saloon) => (
@@ -62,5 +84,3 @@ export default function LandingPage() {
         </div>
     );
 }
-
-
