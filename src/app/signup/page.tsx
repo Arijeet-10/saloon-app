@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { app } from "@/lib/firebase";
+import { getFirestore, doc, setDoc } from "firebase/firestore"; // Import Firestore
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -25,9 +26,18 @@ export default function SignupPage() {
 
     try {
       const auth = getAuth(app);
-      await createUserWithEmailAndPassword(auth, email, password);
-      // Here, you would typically save the user's role to a database
-      // associated with their Firebase UID.  Since we don't have a DB setup, we skip this.
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Get a reference to the Firestore database
+      const db = getFirestore(app);
+
+      // Create a new document in the "users" collection
+      const userDocRef = doc(db, "users", user.uid);
+      await setDoc(userDocRef, {
+        role: role, // Store the selected role
+        email: email, // Store the email
+      });
 
       router.push("/landing"); // Redirect to landing after successful signup
     } catch (e: any) {
@@ -46,7 +56,18 @@ export default function SignupPage() {
     try {
       const auth = getAuth(app);
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+
+        // Get a reference to the Firestore database
+        const db = getFirestore(app);
+
+        // Create a new document in the "users" collection
+        const userDocRef = doc(db, "users", user.uid);
+        await setDoc(userDocRef, {
+            role: role, // Store the selected role
+            email: email, // Store the email
+        });
       router.push("/landing"); // Or wherever you want to redirect after signup
     } catch (e: any) {
       setError(e.message);
@@ -132,4 +153,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
