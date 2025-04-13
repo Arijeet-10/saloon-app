@@ -43,7 +43,7 @@ export default function SignupPage() {
       // Here, you would typically save the user's role to a database
       // associated with their Firebase UID.  Since we don't have a DB setup, we skip this.
 
-      router.push("/login"); // Redirect to login after successful signup
+      router.push("/landing"); // Redirect to landing after successful signup
     } catch (e: any) {
       setError(e.message);
               toast({
@@ -66,7 +66,7 @@ export default function SignupPage() {
       const auth = getAuth(firebaseApp);
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      router.push("/dashboard"); // Or wherever you want to redirect after signup
+      router.push("/landing"); // Or wherever you want to redirect after signup
     } catch (e: any) {
       setError(e.message);
         toast({
@@ -146,3 +146,4 @@ export default function SignupPage() {
     </div>
   );
 }
+

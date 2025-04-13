@@ -40,7 +40,7 @@ export default function LoginPage() {
       const auth = getAuth(firebaseApp);
       await signInWithEmailAndPassword(auth, email, password);
       // Redirect based on role (example, you might need to fetch the user's role from a database)
-      router.push("/dashboard");
+      router.push("/landing");
     } catch (e: any) {
       setError(e.message);
     }
@@ -58,7 +58,7 @@ export default function LoginPage() {
       const auth = getAuth(firebaseApp);
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      router.push("/dashboard");
+      router.push("/landing");
     } catch (e: any) {
       setError(e.message);
           toast({
@@ -123,3 +123,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
