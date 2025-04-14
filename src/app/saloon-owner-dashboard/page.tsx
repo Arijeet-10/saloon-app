@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -241,6 +241,20 @@ export default function SaloonOwnerDashboard() {
                 </p>
             </CardContent>
         </Card>
+
+          {/* Profile Section */}
+          <Card className="mb-6">
+              <CardHeader>
+                  <CardTitle className="text-xl font-semibold">Profile</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  <p>
+                      <Link href="/saloon-owner-dashboard/profile" className="text-blue-500 hover:underline">
+                          View/Edit Profile
+                      </Link>
+                  </p>
+              </CardContent>
+          </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Manage Services */}

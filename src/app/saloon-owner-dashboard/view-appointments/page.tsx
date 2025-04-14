@@ -56,6 +56,7 @@ export default function SaloonOwnerAppointmentsPage() {
                       ...data,
                       customerName: customerName,
                       date: new Date(data.date).toLocaleDateString(),
+                      selectedServices: data.selectedServices || [], // Ensure selectedServices is always an array
                     };
                   })
                 );
@@ -116,4 +117,4 @@ export default function SaloonOwnerAppointmentsPage() {
     );
 }
 
-`
+    
