@@ -12,6 +12,7 @@ import { getFirestore, doc as firestoreDoc, getDoc, setDoc, collection, addDoc, 
 import { app } from "@/lib/firebase";
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
+import Link from 'next/link';
 
 export default function SaloonOwnerDashboard() {
   const [services, setServices] = useState([]);
@@ -24,10 +25,7 @@ export default function SaloonOwnerDashboard() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const [shopData, setShopData] = useState<any>(null);
-  const { toast } = useToast();
-  const [appointments, setAppointments] = useState([]);
-  const [loadingAppointments, setLoadingAppointments] = useState(true);
-  const [errorAppointments, setErrorAppointments] = useState<string | null>(null);
+    const { toast } = useToast();
 
   useEffect(() => {
     const auth = getAuth();
@@ -58,42 +56,6 @@ export default function SaloonOwnerDashboard() {
           const servicesSnapshot = await getDocs(servicesCollection);
           const servicesList = servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           setServices(servicesList);
-
-          // Fetch Appointments
-          const fetchAppointments = async () => {
-            setLoadingAppointments(true);
-            setErrorAppointments(null);
-
-            try {
-              const appointmentsCollection = collection(db, "appointments");
-              const q = query(appointmentsCollection, where("saloonId", "==", userDoc.id)); // Only get appointments for this saloon
-              const querySnapshot = await getDocs(q);
-
-              // Using Promise.all to fetch all customer names concurrently
-              const appointmentsList = await Promise.all(
-                querySnapshot.docs.map(async (doc) => {
-                  const data = doc.data();
-                  const customerDocRef = firestoreDoc(db, "users", data.userId);
-                  const customerDoc = await getDoc(customerDocRef);
-                  const customerName = customerDoc.exists() ? customerDoc.data().email : "Unknown Customer";
-
-                  return {
-                    id: doc.id,
-                    ...data,
-                    customerName: customerName,
-                    date: new Date(data.date).toLocaleDateString(),
-                  };
-                })
-              );
-
-              setAppointments(appointmentsList);
-            } catch (e: any) {
-              setErrorAppointments(e.message);
-            } finally {
-              setLoadingAppointments(false);
-            }
-          };
-          fetchAppointments();
 
         } else {
           // Create a new document if one doesn't exist
@@ -135,10 +97,10 @@ export default function SaloonOwnerDashboard() {
           name: newServiceName,
           price: parseFloat(newServicePrice),
         });
-        toast({
-          title: "Service added successfully",
-          description: "Your service has been added to the shop",
-        });
+                toast({
+                    title: "Service added successfully",
+                    description: "Your service has been added to the shop",
+                });
 
         // Refresh services list after adding a new service
         const servicesSnapshot = await getDocs(servicesCollection);
@@ -149,11 +111,11 @@ export default function SaloonOwnerDashboard() {
         setNewServicePrice("");
       } catch (error) {
         console.error("Error adding service:", error);
-        toast({
-          title: "Error adding service",
-          description: error.message,
-          variant: "destructive",
-        });
+                toast({
+                    title: "Error adding service",
+                    description: error.message,
+                    variant: "destructive",
+                });
       }
     }
   };
@@ -174,10 +136,10 @@ export default function SaloonOwnerDashboard() {
           name: editServiceName,
           price: parseFloat(editServicePrice),
         });
-        toast({
-          title: "Service updated successfully",
-          description: "Your service has been updated to the shop",
-        });
+                toast({
+                    title: "Service updated successfully",
+                    description: "Your service has been updated to the shop",
+                });
 
         // Refresh services list after editing a service
         const servicesCollection = collection(db, "saloons", shopId, "services");
@@ -190,11 +152,11 @@ export default function SaloonOwnerDashboard() {
         setEditServicePrice("");
       } catch (error) {
         console.error("Error updating service:", error);
-        toast({
-          title: "Error updating service",
-          description: error.message,
-          variant: "destructive",
-        });
+                toast({
+                    title: "Error updating service",
+                    description: error.message,
+                    variant: "destructive",
+                });
       }
     }
   };
@@ -206,10 +168,10 @@ export default function SaloonOwnerDashboard() {
 
       try {
         await deleteDoc(serviceDocRef);
-        toast({
-          title: "Service deleted successfully",
-          description: "Your service has been deleted from the shop",
-        });
+                toast({
+                    title: "Service deleted successfully",
+                    description: "Your service has been deleted from the shop",
+                });
 
         // Refresh services list after deleting a service
         const servicesCollection = collection(db, "saloons", shopId, "services");
@@ -219,11 +181,11 @@ export default function SaloonOwnerDashboard() {
 
       } catch (error) {
         console.error("Error deleting service:", error);
-        toast({
-          title: "Error deleting service",
-          description: error.message,
-          variant: "destructive",
-        });
+                toast({
+                    title: "Error deleting service",
+                    description: error.message,
+                    variant: "destructive",
+                });
       }
     }
   };
@@ -266,43 +228,19 @@ export default function SaloonOwnerDashboard() {
         <p>Loading shop data...</p>
       )}
 
-      {/* Display Appointments */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">Appointments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loadingAppointments ? (
-            <p>Loading appointments...</p>
-          ) : errorAppointments ? (
-            <p className="text-red-500">Error: {errorAppointments}</p>
-          ) : appointments.length === 0 ? (
-            <p>No appointments booked.</p>
-          ) : (
-            <ul className="list-disc pl-5">
-              {appointments.map((appointment) => (
-                <li key={appointment.id} className="mb-4">
-                  <p><strong>Customer:</strong> {appointment.customerName || "Unknown"}</p>
-                  <p><strong>Date:</strong> {appointment.date}, <strong>Time:</strong> {appointment.time}</p>
-                  {/* Display Selected Services */}
-                  {appointment.selectedServices && appointment.selectedServices.length > 0 ? (
-                    <div>
-                      <strong>Services:</strong>
-                      <ul className="list-disc pl-5">
-                        {appointment.selectedServices.map((service, index) => (
-                          <li key={index}>{service.name} - ${service.price}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : (
-                    <p>No services selected.</p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+        {/* Appointments Section */}
+        <Card className="mb-6">
+            <CardHeader>
+                <CardTitle className="text-xl font-semibold">Appointments</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p>
+                    <Link href="/saloon-owner-dashboard/view-appointments" className="text-blue-500 hover:underline">
+                        View Appointments
+                    </Link>
+                </p>
+            </CardContent>
+        </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Manage Services */}
@@ -386,4 +324,4 @@ export default function SaloonOwnerDashboard() {
     </div>
   );
 }
-
+    
