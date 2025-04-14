@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2 } from "lucide-react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, deleteDoc, updateDoc, getDocs } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, deleteDoc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { app } from "@/lib/firebase";
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +25,10 @@ export default function SaloonOwnerDashboard() {
   const router = useRouter();
   const [shopData, setShopData] = useState<any>(null);
     const { toast } = useToast();
+  const [appointments, setAppointments] = useState([]);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
+  const [errorAppointments, setErrorAppointments] = useState<string | null>(null);
+
 
   useEffect(() => {
     const auth = getAuth();
@@ -47,6 +51,32 @@ export default function SaloonOwnerDashboard() {
           const servicesSnapshot = await getDocs(servicesCollection);
           const servicesList = servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           setServices(servicesList);
+                  // Fetch Appointments
+                  const fetchAppointments = async () => {
+                    setLoadingAppointments(true);
+                    setErrorAppointments(null);
+
+                    try {
+                        const appointmentsCollection = collection(db, "appointments");
+                        const q = query(appointmentsCollection, where("saloonId", "==", userDoc.id)); // Only get appointments for this saloon
+                        const querySnapshot = await getDocs(q);
+
+                        const appointmentsList = querySnapshot.docs.map(doc => {
+                            const data = doc.data();
+                            return {
+                                id: doc.id,
+                                ...data,
+                                date: new Date(data.date).toLocaleDateString(), // Format date for display
+                            };
+                        });
+                        setAppointments(appointmentsList);
+                    } catch (e: any) {
+                        setErrorAppointments(e.message);
+                    } finally {
+                        setLoadingAppointments(false);
+                    }
+                };
+                fetchAppointments();
 
         } else {
           // Create a new document if one doesn't exist
@@ -218,6 +248,30 @@ export default function SaloonOwnerDashboard() {
                 <p>Loading shop data...</p>
             )}
 
+         {/* Display Appointments */}
+         <Card>
+                    <CardHeader>
+                        <CardTitle>Appointments</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {loadingAppointments ? (
+                            <p>Loading appointments...</p>
+                        ) : errorAppointments ? (
+                            <p>Error: {errorAppointments}</p>
+                        ) : appointments.length === 0 ? (
+                            <p>No appointments booked.</p>
+                        ) : (
+                            <ul>
+                                {appointments.map((appointment) => (
+                                    <li key={appointment.id} className="mb-2">
+                                        Date: {appointment.date}, Time: {appointment.time}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </CardContent>
+                </Card>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Manage Services */}
                 <div>
@@ -304,8 +358,21 @@ export default function SaloonOwnerDashboard() {
                             <CardTitle>Appointments</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p>No appointment data available at this time.</p>
-                            {/* Replace with actual appointment data display later */}
+                            {loadingAppointments ? (
+                                <p>Loading appointments...</p>
+                            ) : errorAppointments ? (
+                                <p>Error: {errorAppointments}</p>
+                            ) : appointments.length === 0 ? (
+                                <p>No appointments booked.</p>
+                            ) : (
+                                <ul>
+                                    {appointments.map((appointment) => (
+                                        <li key={appointment.id} className="mb-2">
+                                            Date: {appointment.date}, Time: {appointment.time}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

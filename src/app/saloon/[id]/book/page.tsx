@@ -1,19 +1,73 @@
 "use client";
 
 import React from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import { useState } from 'react';
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { app } from "@/lib/firebase";
+import { getAuth } from "firebase/auth";
 
 export default function BookAppointmentPage() {
     const params = useParams();
-    const saloonId = parseInt(params.id as string);
+    const router = useRouter();
+    const saloonId = params.id as string;
 
     const [date, setDate] = React.useState<Date | undefined>(new Date());
+    const [time, setTime] = useState<string>("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+
+    const handleConfirmAppointment = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const auth = getAuth();
+            const user = auth.currentUser;
+
+            if (!user) {
+                setError("You must be logged in to book an appointment.");
+                return;
+            }
+
+            if (!date) {
+                setError("Please select a date.");
+                return;
+            }
+
+            if (!time) {
+                setError("Please select a time.");
+                return;
+            }
+
+
+            const db = getFirestore(app);
+            const appointmentsCollection = collection(db, "appointments");
+
+            await addDoc(appointmentsCollection, {
+                userId: user.uid,
+                saloonId: saloonId,
+                date: date.toISOString(), // Store date as ISO string
+                time: time,
+                // You might want to store selected service IDs here as well
+            });
+
+            alert("Appointment booked successfully!"); // Replace with a better UI notification
+            router.push("/upcoming-appointments");
+
+
+        } catch (e: any) {
+            setError(e.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="container mx-auto py-10">
@@ -54,10 +108,19 @@ export default function BookAppointmentPage() {
 
             <div className="mb-4">
                 <h2 className="text-lg font-semibold mb-2">Select Time:</h2>
-                <Input type="time" className="w-64" />
+                <Input
+                    type="time"
+                    className="w-64"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                />
             </div>
 
-            <Button>Confirm Appointment</Button>
+            {error && <p className="text-red-500">{error}</p>}
+
+            <Button onClick={handleConfirmAppointment} disabled={loading}>
+                {loading ? "Booking..." : "Confirm Appointment"}
+            </Button>
         </div>
     );
 }
