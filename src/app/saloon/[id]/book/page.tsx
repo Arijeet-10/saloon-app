@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react';
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import { app } from "@/lib/firebase";
 import { getAuth } from "firebase/auth";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function BookAppointmentPage() {
     const searchParams = useSearchParams();
@@ -83,6 +84,20 @@ export default function BookAppointmentPage() {
         }
     };
 
+    // Predefined time slots
+    const timeSlots = [
+        "9:00 AM",
+        "10:00 AM",
+        "11:00 AM",
+        "12:00 PM",
+        "1:00 PM",
+        "2:00 PM",
+        "3:00 PM",
+        "4:00 PM",
+        "5:00 PM",
+        "6:00 PM",
+    ];
+
     return (
         <div className="container mx-auto py-10">
             <h1 className="text-2xl font-semibold mb-4">Book Appointment</h1>
@@ -136,12 +151,18 @@ export default function BookAppointmentPage() {
 
             <div className="mb-4">
                 <h2 className="text-lg font-semibold mb-2">Select Time:</h2>
-                <Input
-                    type="time"
-                    className="w-64"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                />
+                <Select value={time} onValueChange={setTime}>
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Select a time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {timeSlots.map((slot) => (
+                            <SelectItem key={slot} value={slot}>
+                                {slot}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             {error && <p className="text-red-500">{error}</p>}
