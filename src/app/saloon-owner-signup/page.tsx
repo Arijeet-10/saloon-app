@@ -165,7 +165,7 @@ export default function SaloonOwnerSignupPage() {
           </Button>
           <p className="text-sm text-center">
             Already have an account?{" "}
-            <a href="/login" className="text-primary hover:underline">
+            <a href="/saloon-owner-login" className="text-primary hover:underline">
               Log in
             </a>
           </p>

@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2 } from "lucide-react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { app } from "@/lib/firebase";
 
 // Dummy data for services - replace with actual database integration later
 const initialServices = [
@@ -22,6 +25,31 @@ export default function SaloonOwnerDashboard() {
   const [editServiceId, setEditServiceId] = useState<number | null>(null);
   const [editServiceName, setEditServiceName] = useState("");
   const [editServicePrice, setEditServicePrice] = useState("");
+  const [shopId, setShopId] = useState<string | null>(null); // State to store shop ID
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUser(user);
+        // Fetch shop ID from Firestore
+        const db = getFirestore(app);
+        const userDocRef = doc(db, "saloons", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          setShopId(userDoc.id);
+        } else {
+          console.error("Shop data not found for user:", user.uid);
+        }
+      } else {
+        // Redirect or handle unauthenticated state
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleAddService = () => {
     if (newServiceName && newServicePrice) {
@@ -64,6 +92,15 @@ export default function SaloonOwnerDashboard() {
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-2xl font-semibold mb-4">Saloon Owner Dashboard</h1>
+
+      {/* Display Shop ID */}
+      {shopId && (
+        <div className="mb-4">
+          <p>
+            <strong>Shop ID:</strong> {shopId}
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Manage Services */}
