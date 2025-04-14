@@ -24,11 +24,10 @@ export default function SaloonOwnerDashboard() {
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
   const [shopData, setShopData] = useState<any>(null);
-    const { toast } = useToast();
+  const { toast } = useToast();
   const [appointments, setAppointments] = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
   const [errorAppointments, setErrorAppointments] = useState<string | null>(null);
-
 
   useEffect(() => {
     const auth = getAuth();
@@ -51,32 +50,39 @@ export default function SaloonOwnerDashboard() {
           const servicesSnapshot = await getDocs(servicesCollection);
           const servicesList = servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           setServices(servicesList);
-                  // Fetch Appointments
-                  const fetchAppointments = async () => {
-                    setLoadingAppointments(true);
-                    setErrorAppointments(null);
 
-                    try {
-                        const appointmentsCollection = collection(db, "appointments");
-                        const q = query(appointmentsCollection, where("saloonId", "==", userDoc.id)); // Only get appointments for this saloon
-                        const querySnapshot = await getDocs(q);
+          // Fetch Appointments
+          const fetchAppointments = async () => {
+            setLoadingAppointments(true);
+            setErrorAppointments(null);
 
-                        const appointmentsList = querySnapshot.docs.map(doc => {
-                            const data = doc.data();
-                            return {
-                                id: doc.id,
-                                ...data,
-                                date: new Date(data.date).toLocaleDateString(), // Format date for display
-                            };
-                        });
-                        setAppointments(appointmentsList);
-                    } catch (e: any) {
-                        setErrorAppointments(e.message);
-                    } finally {
-                        setLoadingAppointments(false);
-                    }
+            try {
+              const appointmentsCollection = collection(db, "appointments");
+              const q = query(appointmentsCollection, where("saloonId", "==", userDoc.id)); // Only get appointments for this saloon
+              const querySnapshot = await getDocs(q);
+
+              const appointmentsList = await Promise.all(querySnapshot.docs.map(async doc => {
+                const data = doc.data();
+                // Fetch customer name
+                const customerDocRef = doc(db, "users", data.userId);
+                const customerDoc = await getDoc(customerDocRef);
+                const customerName = customerDoc.exists() ? customerDoc.data().email : "Unknown Customer";
+
+                return {
+                  id: doc.id,
+                  ...data,
+                  customerName: customerName, // Add customer name to appointment data
+                  date: new Date(data.date).toLocaleDateString(), // Format date for display
                 };
-                fetchAppointments();
+              }));
+              setAppointments(appointmentsList);
+            } catch (e: any) {
+              setErrorAppointments(e.message);
+            } finally {
+              setLoadingAppointments(false);
+            }
+          };
+          fetchAppointments();
 
         } else {
           // Create a new document if one doesn't exist
@@ -117,10 +123,10 @@ export default function SaloonOwnerDashboard() {
           name: newServiceName,
           price: parseFloat(newServicePrice),
         });
-          toast({
-              title: "Service added successfully",
-              description: "Your service has been added to the shop",
-          });
+        toast({
+          title: "Service added successfully",
+          description: "Your service has been added to the shop",
+        });
 
         // Refresh services list after adding a new service
         const servicesSnapshot = await getDocs(servicesCollection);
@@ -131,11 +137,11 @@ export default function SaloonOwnerDashboard() {
         setNewServicePrice("");
       } catch (error) {
         console.error("Error adding service:", error);
-          toast({
-              title: "Error adding service",
-              description: error.message,
-              variant: "destructive",
-          });
+        toast({
+          title: "Error adding service",
+          description: error.message,
+          variant: "destructive",
+        });
       }
     }
   };
@@ -156,10 +162,10 @@ export default function SaloonOwnerDashboard() {
           name: editServiceName,
           price: parseFloat(editServicePrice),
         });
-          toast({
-              title: "Service updated successfully",
-              description: "Your service has been updated to the shop",
-          });
+        toast({
+          title: "Service updated successfully",
+          description: "Your service has been updated to the shop",
+        });
 
         // Refresh services list after editing a service
         const servicesCollection = collection(db, "saloons", shopId, "services");
@@ -172,11 +178,11 @@ export default function SaloonOwnerDashboard() {
         setEditServicePrice("");
       } catch (error) {
         console.error("Error updating service:", error);
-          toast({
-              title: "Error updating service",
-              description: error.message,
-              variant: "destructive",
-          });
+        toast({
+          title: "Error updating service",
+          description: error.message,
+          variant: "destructive",
+        });
       }
     }
   };
@@ -188,10 +194,10 @@ export default function SaloonOwnerDashboard() {
 
       try {
         await deleteDoc(serviceDocRef);
-          toast({
-              title: "Service deleted successfully",
-              description: "Your service has been deleted from the shop",
-          });
+        toast({
+          title: "Service deleted successfully",
+          description: "Your service has been deleted from the shop",
+        });
 
         // Refresh services list after deleting a service
         const servicesCollection = collection(db, "saloons", shopId, "services");
@@ -201,182 +207,210 @@ export default function SaloonOwnerDashboard() {
 
       } catch (error) {
         console.error("Error deleting service:", error);
-          toast({
-              title: "Error deleting service",
-              description: error.message,
-              variant: "destructive",
-          });
+        toast({
+          title: "Error deleting service",
+          description: error.message,
+          variant: "destructive",
+        });
       }
     }
   };
 
   return (
-        <div className="container mx-auto py-10">
-            <h1 className="text-2xl font-semibold mb-4">Saloon Owner Dashboard</h1>
+    <div className="container mx-auto py-10">
+      <h1 className="text-2xl font-semibold mb-4">Saloon Owner Dashboard</h1>
 
-            {/* Display Shop ID */}
-            {shopId && (
-                <div className="mb-4">
-                    <p>
-                        <strong>Shop ID:</strong> {shopId}
-                    </p>
-                </div>
-            )}
-
-            {/* Display Shop Data */}
-            {shopData ? (
-                <Card className="mb-4">
-                    <CardHeader>
-                        <CardTitle>Shop Information</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p>
-                            <strong>Shop Name:</strong> {shopData.shopName}
-                        </p>
-                        <p>
-                            <strong>Location:</strong> {shopData.location}
-                        </p>
-                        <p>
-                            <strong>Owner Name:</strong> {shopData.ownerName}
-                        </p>
-                        <p>
-                            <strong>Email:</strong> {shopData.email}
-                        </p>
-                    </CardContent>
-                </Card>
-            ) : (
-                <p>Loading shop data...</p>
-            )}
-
-         {/* Display Appointments */}
-         <Card>
-                    <CardHeader>
-                        <CardTitle>Appointments</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {loadingAppointments ? (
-                            <p>Loading appointments...</p>
-                        ) : errorAppointments ? (
-                            <p>Error: {errorAppointments}</p>
-                        ) : appointments.length === 0 ? (
-                            <p>No appointments booked.</p>
-                        ) : (
-                            <ul>
-                                {appointments.map((appointment) => (
-                                    <li key={appointment.id} className="mb-2">
-                                        Date: {appointment.date}, Time: {appointment.time}
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </CardContent>
-                </Card>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Manage Services */}
-                <div>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Manage Services</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="mb-4">
-                                <h3 className="text-lg font-semibold mb-2">Add Service</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label htmlFor="newServiceName">Name</Label>
-                                        <Input
-                                            type="text"
-                                            id="newServiceName"
-                                            value={newServiceName}
-                                            onChange={(e) => setNewServiceName(e.target.value)}
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="newServicePrice">Price</Label>
-                                        <Input
-                                            type="number"
-                                            id="newServicePrice"
-                                            value={newServicePrice}
-                                            onChange={(e) => setNewServicePrice(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                                <Button className="mt-4" onClick={handleAddService}>Add Service</Button>
-                            </div>
-
-                            <h3 className="text-lg font-semibold mb-2">Current Services</h3>
-                            <ScrollArea className="h-[300px] w-full rounded-md border">
-                                <div className="p-4">
-                                    {services.map((service) => (
-                                        <div key={service.id} className="flex items-center justify-between mb-2">
-                                            <div>
-                                                {editServiceId === service.id ? (
-                                                    <div className="grid grid-cols-2 gap-2">
-                                                        <Input
-                                                            type="text"
-                                                            value={editServiceName}
-                                                            onChange={(e) => setEditServiceName(e.target.value)}
-                                                        />
-                                                        <Input
-                                                            type="number"
-                                                            value={editServicePrice}
-                                                            onChange={(e) => setEditServicePrice(e.target.value)}
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        {service.name} - ${service.price}
-                                                    </>
-                                                )}
-                                            </div>
-                                            <div>
-                                                {editServiceId === service.id ? (
-                                                    <Button size="sm" onClick={handleSaveService}>Save</Button>
-                                                ) : (
-                                                    <>
-                                                        <Button size="sm" onClick={() => handleEditService(service)}>Edit</Button>
-                                                        <Button size="sm" variant="destructive" onClick={() => handleDeleteService(service.id)}>
-                                                            <Trash2 className="h-4 w-4 mr-2" />
-                                                            Delete
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </ScrollArea>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* View Appointments */}
-                <div>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Appointments</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {loadingAppointments ? (
-                                <p>Loading appointments...</p>
-                            ) : errorAppointments ? (
-                                <p>Error: {errorAppointments}</p>
-                            ) : appointments.length === 0 ? (
-                                <p>No appointments booked.</p>
-                            ) : (
-                                <ul>
-                                    {appointments.map((appointment) => (
-                                        <li key={appointment.id} className="mb-2">
-                                            Date: {appointment.date}, Time: {appointment.time}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
+      {/* Display Shop ID */}
+      {shopId && (
+        <div className="mb-4">
+          <p>
+            <strong>Shop ID:</strong> {shopId}
+          </p>
         </div>
-    );
+      )}
+
+      {/* Display Shop Data */}
+      {shopData ? (
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle>Shop Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>
+              <strong>Shop Name:</strong> {shopData.shopName}
+            </p>
+            <p>
+              <strong>Location:</strong> {shopData.location}
+            </p>
+            <p>
+              <strong>Owner Name:</strong> {shopData.ownerName}
+            </p>
+            <p>
+              <strong>Email:</strong> {shopData.email}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <p>Loading shop data...</p>
+      )}
+
+      {/* Display Appointments */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Appointments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loadingAppointments ? (
+            <p>Loading appointments...</p>
+          ) : errorAppointments ? (
+            <p>Error: {errorAppointments}</p>
+          ) : appointments.length === 0 ? (
+            <p>No appointments booked.</p>
+          ) : (
+            <ul>
+              {appointments.map((appointment) => (
+                <li key={appointment.id} className="mb-2">
+                  <p><strong>Customer:</strong> {appointment.customerName || "Unknown"}</p>
+                  <p><strong>Date:</strong> {appointment.date}, <strong>Time:</strong> {appointment.time}</p>
+                  {/* Display Selected Services */}
+                  {appointment.selectedServices && appointment.selectedServices.length > 0 ? (
+                    <div>
+                      <strong>Services:</strong>
+                      <ul>
+                        {appointment.selectedServices.map((service, index) => (
+                          <li key={index}>{service.name} - ${service.price}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p>No services selected.</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Manage Services */}
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Manage Services</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold mb-2">Add Service</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="newServiceName">Name</Label>
+                    <Input
+                      type="text"
+                      id="newServiceName"
+                      value={newServiceName}
+                      onChange={(e) => setNewServiceName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="newServicePrice">Price</Label>
+                    <Input
+                      type="number"
+                      id="newServicePrice"
+                      value={newServicePrice}
+                      onChange={(e) => setNewServicePrice(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <Button className="mt-4" onClick={handleAddService}>Add Service</Button>
+              </div>
+
+              <h3 className="text-lg font-semibold mb-2">Current Services</h3>
+              <ScrollArea className="h-[300px] w-full rounded-md border">
+                <div className="p-4">
+                  {services.map((service) => (
+                    <div key={service.id} className="flex items-center justify-between mb-2">
+                      <div>
+                        {editServiceId === service.id ? (
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input
+                              type="text"
+                              value={editServiceName}
+                              onChange={(e) => setEditServiceName(e.target.value)}
+                            />
+                            <Input
+                              type="number"
+                              value={editServicePrice}
+                              onChange={(e) => setEditServicePrice(e.target.value)}
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            {service.name} - ${service.price}
+                          </>
+                        )}
+                      </div>
+                      <div>
+                        {editServiceId === service.id ? (
+                          <Button size="sm" onClick={handleSaveService}>Save</Button>
+                        ) : (
+                          <>
+                            <Button size="sm" onClick={() => handleEditService(service)}>Edit</Button>
+                            <Button size="sm" variant="destructive" onClick={() => handleDeleteService(service.id)}>
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* View Appointments */}
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Appointments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingAppointments ? (
+                <p>Loading appointments...</p>
+              ) : errorAppointments ? (
+                <p>Error: {errorAppointments}</p>
+              ) : appointments.length === 0 ? (
+                <p>No appointments booked.</p>
+              ) : (
+                <ul>
+                  {appointments.map((appointment) => (
+                    <li key={appointment.id} className="mb-2">
+                      <p><strong>Customer:</strong> {appointment.customerName || "Unknown"}</p>
+                      <p><strong>Date:</strong> {appointment.date}, <strong>Time:</strong> {appointment.time}</p>
+                      {/* Display Selected Services */}
+                      {appointment.selectedServices && appointment.selectedServices.length > 0 ? (
+                        <div>
+                          <strong>Services:</strong>
+                          <ul>
+                            {appointment.selectedServices.map((service, index) => (
+                              <li key={index}>{service.name} - ${service.price}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : (
+                        <p>No services selected.</p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
 }
