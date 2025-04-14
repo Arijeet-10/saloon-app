@@ -230,12 +230,12 @@ export default function SaloonOwnerDashboard() {
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-2xl font-semibold mb-4">Saloon Owner Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-6">Saloon Owner Dashboard</h1>
 
       {/* Display Shop ID */}
       {shopId && (
         <div className="mb-4">
-          <p>
+          <p className="text-gray-600">
             <strong>Shop ID:</strong> {shopId}
           </p>
         </div>
@@ -243,21 +243,21 @@ export default function SaloonOwnerDashboard() {
 
       {/* Display Shop Data */}
       {shopData ? (
-        <Card className="mb-4">
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Shop Information</CardTitle>
+            <CardTitle className="text-xl font-semibold">Shop Information</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
+            <p className="text-gray-700">
               <strong>Shop Name:</strong> {shopData.shopName}
             </p>
-            <p>
+            <p className="text-gray-700">
               <strong>Location:</strong> {shopData.location}
             </p>
-            <p>
+            <p className="text-gray-700">
               <strong>Owner Name:</strong> {shopData.ownerName}
             </p>
-            <p>
+            <p className="text-gray-700">
               <strong>Email:</strong> {shopData.email}
             </p>
           </CardContent>
@@ -267,28 +267,28 @@ export default function SaloonOwnerDashboard() {
       )}
 
       {/* Display Appointments */}
-      <Card>
+      <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Appointments</CardTitle>
+          <CardTitle className="text-xl font-semibold">Appointments</CardTitle>
         </CardHeader>
         <CardContent>
           {loadingAppointments ? (
             <p>Loading appointments...</p>
           ) : errorAppointments ? (
-            <p>Error: {errorAppointments}</p>
+            <p className="text-red-500">Error: {errorAppointments}</p>
           ) : appointments.length === 0 ? (
             <p>No appointments booked.</p>
           ) : (
-            <ul>
+            <ul className="list-disc pl-5">
               {appointments.map((appointment) => (
-                <li key={appointment.id} className="mb-2">
+                <li key={appointment.id} className="mb-4">
                   <p><strong>Customer:</strong> {appointment.customerName || "Unknown"}</p>
                   <p><strong>Date:</strong> {appointment.date}, <strong>Time:</strong> {appointment.time}</p>
                   {/* Display Selected Services */}
                   {appointment.selectedServices && appointment.selectedServices.length > 0 ? (
                     <div>
                       <strong>Services:</strong>
-                      <ul>
+                      <ul className="list-disc pl-5">
                         {appointment.selectedServices.map((service, index) => (
                           <li key={index}>{service.name} - ${service.price}</li>
                         ))}
@@ -309,12 +309,12 @@ export default function SaloonOwnerDashboard() {
         <div>
           <Card>
             <CardHeader>
-              <CardTitle>Manage Services</CardTitle>
+              <CardTitle className="text-xl font-semibold">Manage Services</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="mb-4">
                 <h3 className="text-lg font-semibold mb-2">Add Service</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="newServiceName">Name</Label>
                     <Input
@@ -344,7 +344,7 @@ export default function SaloonOwnerDashboard() {
                     <div key={service.id} className="flex items-center justify-between mb-2">
                       <div>
                         {editServiceId === service.id ? (
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <Input
                               type="text"
                               value={editServiceName}
@@ -386,3 +386,4 @@ export default function SaloonOwnerDashboard() {
     </div>
   );
 }
+

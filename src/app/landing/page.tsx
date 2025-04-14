@@ -60,7 +60,7 @@ export default function LandingPage() {
                                 <div className="flex flex-col items-center">
                                     <Avatar className="h-32 w-32 mb-4">
                                         <AvatarImage src={saloon.image || "https://picsum.photos/id/237/300/200"} alt={saloon.name} className="object-cover" />
-                                        <AvatarFallback>{saloon.name ? saloon.name.substring(0, 2) : 'SS'}</AvatarFallback>
+                                        <AvatarFallback>{saloon.shopName ? saloon.shopName.substring(0, 2) : 'SS'}</AvatarFallback>
                                     </Avatar>
                                     <h2 className="text-lg font-semibold">{saloon.shopName}</h2>
                                     <p className="text-sm text-muted-foreground">{saloon.location}</p>
@@ -79,3 +79,4 @@ export default function LandingPage() {
         </div>
     );
 }
+
