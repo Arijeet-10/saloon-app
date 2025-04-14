@@ -44,7 +44,7 @@ export default function SaloonServicePage() {
     const totalCost = selectedServices.reduce((sum, service) => sum + service.price, 0);
 
     const handleBookAppointment = () => {
-        router.push(`/saloon/${saloonId}/book`);
+        router.push(`/saloon/${saloonId}/book?services=${encodeURIComponent(JSON.stringify(selectedServices))}`);
     };
 
     return (
