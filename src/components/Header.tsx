@@ -2,14 +2,24 @@
 
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { app } from "@/lib/firebase";
+import { useEffect, useState } from "react";
 
 const Header = () => {
     const router = useRouter();
     const { toast } = useToast();
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        const auth = getAuth();
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUser(user);
+        });
+        return () => unsubscribe();
+    }, []);
 
     const handleSignOut = async () => {
         const auth = getAuth(app);
@@ -45,11 +55,13 @@ const Header = () => {
                     <li>
                         <Link href="/upcoming-appointments">Appointments</Link>
                     </li>
-                    <li>
-                        <Button variant="outline" size="sm" onClick={handleSignOut}>
-                            Sign Out
-                        </Button>
-                    </li>
+                    {user && (
+                        <li>
+                            <Button variant="outline" size="sm" onClick={handleSignOut}>
+                                Sign Out
+                            </Button>
+                        </li>
+                    )}
                 </ul>
             </nav>
         </header>
@@ -57,4 +69,3 @@ const Header = () => {
 };
 
 export default Header;
-
