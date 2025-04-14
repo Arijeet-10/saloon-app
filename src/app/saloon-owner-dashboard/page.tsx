@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2 } from "lucide-react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, deleteDoc, updateDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, deleteDoc, updateDoc, getDocs } from "firebase/firestore";
 import { app } from "@/lib/firebase";
 import { useRouter } from 'next/navigation';
 
