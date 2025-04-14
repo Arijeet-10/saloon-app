@@ -382,48 +382,7 @@ export default function SaloonOwnerDashboard() {
             </CardContent>
           </Card>
         </div>
-
-        {/* View Appointments */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Appointments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingAppointments ? (
-                <p>Loading appointments...</p>
-              ) : errorAppointments ? (
-                <p>Error: {errorAppointments}</p>
-              ) : appointments.length === 0 ? (
-                <p>No appointments booked.</p>
-              ) : (
-                <ul>
-                  {appointments.map((appointment) => (
-                    <li key={appointment.id} className="mb-2">
-                      <p><strong>Customer:</strong> {appointment.customerName || "Unknown"}</p>
-                      <p><strong>Date:</strong> {appointment.date}, <strong>Time:</strong> {appointment.time}</p>
-                      {/* Display Selected Services */}
-                      {appointment.selectedServices && appointment.selectedServices.length > 0 ? (
-                        <div>
-                          <strong>Services:</strong>
-                          <ul>
-                            {appointment.selectedServices.map((service, index) => (
-                              <li key={index}>{service.name} - ${service.price}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : (
-                        <p>No services selected.</p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
 }
-
