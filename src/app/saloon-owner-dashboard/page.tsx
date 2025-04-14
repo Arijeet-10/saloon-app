@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2 } from "lucide-react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, deleteDoc, updateDoc, getDocs, query, where } from "firebase/firestore";
+import { getFirestore, doc as firestoreDoc, getDoc, setDoc, collection, addDoc, deleteDoc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { app } from "@/lib/firebase";
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
@@ -37,7 +37,7 @@ export default function SaloonOwnerDashboard() {
 
         // Fetch shop ID from Firestore
         const db = getFirestore(app);
-        const userDocRef = doc(db, "saloons", user.uid);
+        const userDocRef = firestoreDoc(db, "saloons", user.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
@@ -61,20 +61,23 @@ export default function SaloonOwnerDashboard() {
               const q = query(appointmentsCollection, where("saloonId", "==", userDoc.id)); // Only get appointments for this saloon
               const querySnapshot = await getDocs(q);
 
-              const appointmentsList = await Promise.all(querySnapshot.docs.map(async doc => {
-                const data = doc.data();
-                // Fetch customer name
-                const customerDocRef = doc(db, "users", data.userId);
-                const customerDoc = await getDoc(customerDocRef);
-                const customerName = customerDoc.exists() ? customerDoc.data().email : "Unknown Customer";
+              // Using Promise.all to fetch all customer names concurrently
+              const appointmentsList = await Promise.all(
+                querySnapshot.docs.map(async (doc) => {
+                  const data = doc.data();
+                  const customerDocRef = firestoreDoc(db, "users", data.userId);
+                  const customerDoc = await getDoc(customerDocRef);
+                  const customerName = customerDoc.exists() ? customerDoc.data().email : "Unknown Customer";
 
-                return {
-                  id: doc.id,
-                  ...data,
-                  customerName: customerName, // Add customer name to appointment data
-                  date: new Date(data.date).toLocaleDateString(), // Format date for display
-                };
-              }));
+                  return {
+                    id: doc.id,
+                    ...data,
+                    customerName: customerName,
+                    date: new Date(data.date).toLocaleDateString(),
+                  };
+                })
+              );
+
               setAppointments(appointmentsList);
             } catch (e: any) {
               setErrorAppointments(e.message);
@@ -155,7 +158,7 @@ export default function SaloonOwnerDashboard() {
   const handleSaveService = async () => {
     if (editServiceId && editServiceName && editServicePrice && shopId) {
       const db = getFirestore(app);
-      const serviceDocRef = doc(db, "saloons", shopId, "services", editServiceId);
+      const serviceDocRef = firestoreDoc(db, "saloons", shopId, "services", editServiceId);
 
       try {
         await updateDoc(serviceDocRef, {
@@ -190,7 +193,7 @@ export default function SaloonOwnerDashboard() {
   const handleDeleteService = async (id) => {
     if (shopId) {
       const db = getFirestore(app);
-      const serviceDocRef = doc(db, "saloons", shopId, "services", id);
+      const serviceDocRef = firestoreDoc(db, "saloons", shopId, "services", id);
 
       try {
         await deleteDoc(serviceDocRef);
