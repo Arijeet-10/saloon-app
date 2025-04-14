@@ -73,7 +73,18 @@ export default function UpcomingAppointmentsPage() {
                                 <p>Saloon ID: {appointment.saloonId}</p>
                                 <p>Date: {new Date(appointment.date).toLocaleDateString()}</p>
                                 <p>Time: {appointment.time}</p>
-                                {/* Display other appointment details here */}
+                                {appointment.selectedServices && appointment.selectedServices.length > 0 ? (
+                                    <div>
+                                        <strong>Services:</strong>
+                                        <ul>
+                                            {appointment.selectedServices.map((service, index) => (
+                                                <li key={index}>{service.name} - ${service.price}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : (
+                                    <p>No services selected.</p>
+                                )}
                             </CardContent>
                         </Card>
                     ))}

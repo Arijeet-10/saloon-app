@@ -1,21 +1,35 @@
 "use client";
 
 import React from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import { app } from "@/lib/firebase";
 import { getAuth } from "firebase/auth";
 
 export default function BookAppointmentPage() {
+    const searchParams = useSearchParams();
     const params = useParams();
     const router = useRouter();
     const saloonId = params.id as string;
+    const selectedServicesString = searchParams.get('services');
+    const [selectedServices, setSelectedServices] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (selectedServicesString) {
+            try {
+                const parsedServices = JSON.parse(decodeURIComponent(selectedServicesString));
+                setSelectedServices(parsedServices);
+            } catch (error) {
+                console.error("Error parsing selected services:", error);
+            }
+        }
+    }, [selectedServicesString]);
 
     const [date, setDate] = React.useState<Date | undefined>(new Date());
     const [time, setTime] = useState<string>("");
@@ -55,7 +69,7 @@ export default function BookAppointmentPage() {
                 saloonId: saloonId,
                 date: date.toISOString(), // Store date as ISO string
                 time: time,
-                // You might want to store selected service IDs here as well
+                selectedServices: selectedServices, // Store selected service IDs here as well
             });
 
             alert("Appointment booked successfully!"); // Replace with a better UI notification
@@ -73,6 +87,20 @@ export default function BookAppointmentPage() {
         <div className="container mx-auto py-10">
             <h1 className="text-2xl font-semibold mb-4">Book Appointment</h1>
             <p className="mb-4">Saloon ID: {saloonId}</p>
+
+            <div className="mb-4">
+                <h2 className="text-lg font-semibold mb-2">Selected Services:</h2>
+                {selectedServices.length > 0 ? (
+                    <ul>
+                        {selectedServices.map((service) => (
+                            <li key={service.id}>{service.name} - ${service.price}</li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>No services selected.</p>
+                )}
+            </div>
+
 
             <div className="mb-4">
                 <h2 className="text-lg font-semibold mb-2">Select Date:</h2>
