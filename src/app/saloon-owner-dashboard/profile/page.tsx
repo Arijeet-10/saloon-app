@@ -10,16 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function SaloonOwnerProfilePage() {
     const [shopData, setShopData] = useState({
         shopName: "",
         location: "",
         ownerName: "",
-        email: ""
+        email: "",
+        image: null
     });
     const [isEditing, setIsEditing] = useState(false);
     const [user, setUser] = useState<User | null>(null);
+    const [imageFile, setImageFile] = useState(null);
     const router = useRouter();
     const { toast } = useToast();
 
@@ -60,6 +64,13 @@ export default function SaloonOwnerProfilePage() {
         }));
     };
 
+
+    const handleImageChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setImageFile(e.target.files[0]);
+        }
+    };
+
     const handleSave = async () => {
         try {
             const auth = getAuth();
@@ -71,7 +82,20 @@ export default function SaloonOwnerProfilePage() {
             const db = getFirestore(app);
             const userDocRef = doc(db, "saloons", user.uid);
 
-            await updateDoc(userDocRef, shopData);
+            let imageUrl = shopData.image; // Default to existing image URL
+
+            if (imageFile) {
+                const storage = getStorage(app);
+                const imageRef = ref(storage, `saloon-images/${user.uid}/${imageFile.name}`);
+                const snapshot = await uploadBytes(imageRef, imageFile);
+                imageUrl = await getDownloadURL(snapshot.ref); // Get the download URL
+            }
+
+            await updateDoc(userDocRef, {
+                ...shopData,
+                image: imageUrl // Store the image URL in Firestore
+            });
+
             setIsEditing(false);
             toast({
                 title: "Success",
@@ -96,6 +120,21 @@ export default function SaloonOwnerProfilePage() {
                     <CardTitle>Shop Details</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-4">
+                     <div className="grid gap-2">
+                            <Label htmlFor="image">Shop Image</Label>
+                            <Avatar className="h-32 w-32">
+                                <AvatarImage src={shopData.image || "https://picsum.photos/id/237/300/200"} alt="Shop Image" />
+                                <AvatarFallback>SS</AvatarFallback>
+                            </Avatar>
+                            {isEditing && (
+                                <Input
+                                    id="image"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                />
+                            )}
+                        </div>
                     <div className="grid gap-2">
                         <Label htmlFor="shopName">Shop Name</Label>
                         <Input
@@ -152,3 +191,4 @@ export default function SaloonOwnerProfilePage() {
         </div>
     );
 }
+
