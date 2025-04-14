@@ -23,7 +23,9 @@ export default function SaloonOwnerLoginPage() {
 
     try {
       const auth = getAuth(app);
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      localStorage.setItem('user', JSON.stringify(user));
       router.push("/saloon-owner-dashboard"); // Redirect to saloon owner dashboard
     } catch (e: any) {
       setError(e.message);
@@ -81,3 +83,4 @@ export default function SaloonOwnerLoginPage() {
     </div>
   );
 }
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import {
   Sidebar,
@@ -37,7 +37,7 @@ const {
 } = nextConfig.publicRuntimeConfig;
 
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -55,11 +55,20 @@ export default function Dashboard() {
     }
 
     const auth = getAuth();
+
+        // Check for persisted user in localStorage
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
+          localStorage.setItem('user', JSON.stringify(user));
       } else {
         router.push('/login'); // Redirect if not logged in
+          localStorage.removeItem('user');
       }
     });
 
@@ -75,6 +84,7 @@ export default function Dashboard() {
     try {
       await signOut(auth);
       router.push('/login');
+      localStorage.removeItem('user');
     } catch (error) {
       console.error("Sign out error", error);
     }
@@ -129,3 +139,4 @@ export default function Dashboard() {
     </SidebarProvider>
   );
 }
+

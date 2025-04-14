@@ -37,6 +37,7 @@ export default function LoginPage() {
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const role = userData?.role; // Assuming you store the role in a "role" field
+        localStorage.setItem('user', JSON.stringify(user));
 
         if (role === "saloon owner") {
           router.push("/saloon-owner-dashboard");
@@ -77,6 +78,7 @@ export default function LoginPage() {
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const role = userData?.role; // Assuming you store the role in a "role" field
+           localStorage.setItem('user', JSON.stringify(user));
 
         if (role === "saloon owner") {
           router.push("/saloon-owner-dashboard");
@@ -152,3 +154,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

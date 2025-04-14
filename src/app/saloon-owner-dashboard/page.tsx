@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2 } from "lucide-react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import { getFirestore, doc as firestoreDoc, getDoc, setDoc, collection, addDoc, deleteDoc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { app } from "@/lib/firebase";
 import { useRouter } from 'next/navigation';
@@ -21,7 +21,7 @@ export default function SaloonOwnerDashboard() {
   const [editServiceName, setEditServiceName] = useState("");
   const [editServicePrice, setEditServicePrice] = useState("");
   const [shopId, setShopId] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const [shopData, setShopData] = useState<any>(null);
   const { toast } = useToast();
@@ -31,9 +31,17 @@ export default function SaloonOwnerDashboard() {
 
   useEffect(() => {
     const auth = getAuth();
+
+        // Check for persisted user in localStorage
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
+          localStorage.setItem('user', JSON.stringify(user));
 
         // Fetch shop ID from Firestore
         const db = getFirestore(app);
@@ -111,6 +119,7 @@ export default function SaloonOwnerDashboard() {
       } else {
         router.push('/saloon-owner-login');
         // Redirect or handle unauthenticated state
+          localStorage.removeItem('user');
       }
     });
 
@@ -417,3 +426,4 @@ export default function SaloonOwnerDashboard() {
     </div>
   );
 }
+
