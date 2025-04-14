@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2 } from "lucide-react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { app } from "@/lib/firebase";
+import { useRouter } from 'next/navigation';
 
 // Dummy data for services - replace with actual database integration later
 const initialServices = [
@@ -27,6 +28,7 @@ export default function SaloonOwnerDashboard() {
   const [editServicePrice, setEditServicePrice] = useState("");
   const [shopId, setShopId] = useState<string | null>(null); // State to store shop ID
   const [user, setUser] = useState<any>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const auth = getAuth();
@@ -41,15 +43,28 @@ export default function SaloonOwnerDashboard() {
         if (userDoc.exists()) {
           setShopId(userDoc.id);
         } else {
-          console.error("Shop data not found for user:", user.uid);
+          // Create a new document if one doesn't exist
+          try {
+            await setDoc(userDocRef, {
+              ownerId: user.uid,
+              shopName: "My Saloon", // Provide a default shop name or fetch from user input
+              location: "Anytown", // Provide a default location or fetch from user input
+              ownerName: user.displayName || "Owner", // Provide a default owner name
+              email: user.email,
+            });
+            setShopId(user.uid); // Set shop ID after creating the document
+          } catch (error) {
+            console.error("Error creating shop data:", error);
+          }
         }
       } else {
+        router.push('/saloon-owner-login');
         // Redirect or handle unauthenticated state
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   const handleAddService = () => {
     if (newServiceName && newServicePrice) {
