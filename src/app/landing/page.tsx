@@ -59,7 +59,7 @@ export default function LandingPage() {
                             <CardContent className="p-4">
                                 <div className="flex flex-col items-center">
                                     <Avatar className="h-32 w-32 mb-4">
-                                        <AvatarImage src={saloon.image || "https://picsum.photos/id/237/300/200"} alt={saloon.shopName} className="object-cover" />
+                                        <AvatarImage src={saloon.image || "https://images.unsplash.com/photo-1616226384899-f9890b13d852?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGJhcmJlcnxlbnwwfHwwfHx8MA%3D%3D&w=1000&q=80"} alt={saloon.shopName} className="object-cover" />
                                         <AvatarFallback>{saloon.shopName ? saloon.shopName.substring(0, 2) : 'SS'}</AvatarFallback>
                                     </Avatar>
                                     <h2 className="text-lg font-semibold">{saloon.shopName}</h2>
@@ -79,3 +79,4 @@ export default function LandingPage() {
         </div>
     );
 }
+

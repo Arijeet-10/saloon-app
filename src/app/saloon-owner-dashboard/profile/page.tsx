@@ -123,7 +123,7 @@ export default function SaloonOwnerProfilePage() {
                      <div className="grid gap-2">
                             <Label htmlFor="image">Shop Image</Label>
                             <Avatar className="h-32 w-32">
-                                <AvatarImage src={shopData.image || "https://picsum.photos/id/237/300/200"} alt="Shop Image" />
+                                <AvatarImage src={shopData.image || "https://images.unsplash.com/photo-1616226384899-f9890b13d852?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGJhcmJlcnxlbnwwfHwwfHx8MA%3D%3D&w=1000&q=80"} alt="Shop Image" />
                                 <AvatarFallback>SS</AvatarFallback>
                             </Avatar>
                             {isEditing && (
