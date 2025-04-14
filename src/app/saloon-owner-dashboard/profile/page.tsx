@@ -96,6 +96,12 @@ export default function SaloonOwnerProfilePage() {
                 image: imageUrl // Store the image URL in Firestore
             });
 
+            //Update the shopData state after image upload
+            setShopData(prevState => ({
+                ...prevState,
+                image: imageUrl
+            }));
+
             setIsEditing(false);
             toast({
                 title: "Success",
