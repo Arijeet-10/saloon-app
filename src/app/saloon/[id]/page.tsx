@@ -1,35 +1,37 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-
-// Dummy data for saloon services
-const services = {
-    1: [
-        { id: 1, name: "Haircut", price: 25 },
-        { id: 2, name: "Beard Trim", price: 15 },
-        { id: 3, name: "Shave", price: 20 },
-    ],
-    2: [
-        { id: 4, name: "Hair Coloring", price: 60 },
-        { id: 5, name: "Manicure", price: 30 },
-    ],
-    3: [
-        { id: 6, name: "Facial", price: 40 },
-        { id: 7, name: "Massage", price: 50 },
-    ],
-};
+import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { app } from "@/lib/firebase";
 
 export default function SaloonServicePage() {
     const params = useParams();
     const router = useRouter();
-    const saloonId = parseInt(params.id as string);
-    const saloonServices = services[saloonId] || [];
-
+    const saloonId = params.id as string; // Use string type
+    const [saloonServices, setSaloonServices] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
+
+    useEffect(() => {
+        const fetchServices = async () => {
+            if (saloonId) {
+                const db = getFirestore(app);
+                const servicesCollection = collection(db, "saloons", saloonId, "services");
+                try {
+                    const servicesSnapshot = await getDocs(servicesCollection);
+                    const servicesList = servicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setSaloonServices(servicesList);
+                } catch (error) {
+                    console.error("Error fetching services:", error);
+                }
+            }
+        };
+
+        fetchServices();
+    }, [saloonId]);
 
     const handleAddService = (service) => {
         setSelectedServices([...selectedServices, service]);

@@ -21,41 +21,8 @@ export default function LandingPage() {
             const saloonSnapshot = await getDocs(saloonsCollection);
             const saloonList = saloonSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            // Dummy data for saloons (to be replaced with actual data)
-            const dummySaloons = [
-                {
-                    id: 1,
-                    name: "The Barber Shop",
-                    location: "123 Main St, Anytown",
-                    rating: 4.5,
-                    image: "https://picsum.photos/id/237/300/200",
-                    description: "A classic barber shop with a modern twist.",
-                    openingHours: "Mon-Sat: 9am - 7pm"
-                },
-                {
-                    id: 2,
-                    name: "Hair Today, Gone Tomorrow",
-                    location: "456 Elm St, Sometown",
-                    rating: 3.8,
-                    image: "https://picsum.photos/id/238/300/200",
-                    description: "Trendy salon offering the latest hair styles.",
-                    openingHours: "Tue-Sun: 10am - 8pm"
-                },
-                {
-                    id: 3,
-                    name: "Shear Perfection",
-                    location: "789 Oak St, Anytown",
-                    rating: 4.2,
-                    image: "https://picsum.photos/id/239/300/200",
-                    description: "Providing shear perfection with every cut.",
-                    openingHours: "Mon-Fri: 8am - 6pm"
-                },
-            ];
-
-            const combinedSaloons = [...dummySaloons, ...saloonList];
-
-            setAllSaloons(combinedSaloons);
-            setSaloons(combinedSaloons); // Initialize with all saloons
+            setAllSaloons(saloonList);
+            setSaloons(saloonList); // Initialize with all saloons
         };
 
         fetchSaloons();
@@ -92,17 +59,17 @@ export default function LandingPage() {
                             <CardContent className="p-4">
                                 <div className="flex flex-col items-center">
                                     <Avatar className="h-32 w-32 mb-4">
-                                        <AvatarImage src={saloon.image} alt={saloon.name} className="object-cover" />
+                                        <AvatarImage src={saloon.image || "https://picsum.photos/id/237/300/200"} alt={saloon.name} className="object-cover" />
                                         <AvatarFallback>{saloon.name ? saloon.name.substring(0, 2) : 'SS'}</AvatarFallback>
                                     </Avatar>
-                                    <h2 className="text-lg font-semibold">{saloon.name}</h2>
+                                    <h2 className="text-lg font-semibold">{saloon.shopName}</h2>
                                     <p className="text-sm text-muted-foreground">{saloon.location}</p>
                                     <div className="flex items-center mt-2">
                                         <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                                        <span>{saloon.rating}</span>
+                                        <span>{saloon.rating || '4.0'}</span>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2">{saloon.description}</p>
-                                    <p className="text-xs text-gray-500">{saloon.openingHours}</p>
+                                    <p className="text-xs text-gray-500 mt-2">{saloon.description || "Trendy salon offering the latest hair styles."}</p>
+                                    <p className="text-xs text-gray-500">{saloon.openingHours || "Mon-Sat: 9am - 7pm"}</p>
                                 </div>
                             </CardContent>
                         </Card>
@@ -112,4 +79,3 @@ export default function LandingPage() {
         </div>
     );
 }
-

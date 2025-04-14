@@ -11,6 +11,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, deleteDoc, updateDoc, getDocs } from "firebase/firestore";
 import { app } from "@/lib/firebase";
 import { useRouter } from 'next/navigation';
+import { useToast } from "@/hooks/use-toast";
 
 export default function SaloonOwnerDashboard() {
   const [services, setServices] = useState([]);
@@ -23,6 +24,7 @@ export default function SaloonOwnerDashboard() {
   const [user, setUser] = useState<any>(null);
   const router = useRouter();
   const [shopData, setShopData] = useState<any>(null);
+    const { toast } = useToast();
 
   useEffect(() => {
     const auth = getAuth();
@@ -85,6 +87,10 @@ export default function SaloonOwnerDashboard() {
           name: newServiceName,
           price: parseFloat(newServicePrice),
         });
+          toast({
+              title: "Service added successfully",
+              description: "Your service has been added to the shop",
+          });
 
         // Refresh services list after adding a new service
         const servicesSnapshot = await getDocs(servicesCollection);
@@ -95,6 +101,11 @@ export default function SaloonOwnerDashboard() {
         setNewServicePrice("");
       } catch (error) {
         console.error("Error adding service:", error);
+          toast({
+              title: "Error adding service",
+              description: error.message,
+              variant: "destructive",
+          });
       }
     }
   };
@@ -115,6 +126,10 @@ export default function SaloonOwnerDashboard() {
           name: editServiceName,
           price: parseFloat(editServicePrice),
         });
+          toast({
+              title: "Service updated successfully",
+              description: "Your service has been updated to the shop",
+          });
 
         // Refresh services list after editing a service
         const servicesCollection = collection(db, "saloons", shopId, "services");
@@ -127,6 +142,11 @@ export default function SaloonOwnerDashboard() {
         setEditServicePrice("");
       } catch (error) {
         console.error("Error updating service:", error);
+          toast({
+              title: "Error updating service",
+              description: error.message,
+              variant: "destructive",
+          });
       }
     }
   };
@@ -138,6 +158,10 @@ export default function SaloonOwnerDashboard() {
 
       try {
         await deleteDoc(serviceDocRef);
+          toast({
+              title: "Service deleted successfully",
+              description: "Your service has been deleted from the shop",
+          });
 
         // Refresh services list after deleting a service
         const servicesCollection = collection(db, "saloons", shopId, "services");
@@ -147,6 +171,11 @@ export default function SaloonOwnerDashboard() {
 
       } catch (error) {
         console.error("Error deleting service:", error);
+          toast({
+              title: "Error deleting service",
+              description: error.message,
+              variant: "destructive",
+          });
       }
     }
   };
