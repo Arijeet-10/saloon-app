@@ -21,7 +21,8 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError(null);
@@ -49,7 +50,7 @@ export default function SignupPage() {
 
       // Update the user's display name
       await updateProfile(user, {
-        displayName: fullName
+        displayName: `${firstName} ${lastName}`
       });
       
       // Store additional user data in Firestore
@@ -57,7 +58,8 @@ export default function SignupPage() {
       await setDoc(doc(db, "users", user.uid), {
         fullName,
         email,
-        role: "customer", // Default role
+        firstName: firstName,
+        lastName: lastName,        role: "customer", // Default role
         createdAt: new Date().toISOString()
       });
 
@@ -140,16 +142,30 @@ export default function SignupPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="John Doe"
-                  className="h-10"
-                  required
-                />
+                <div className="flex space-x-2">
+                  <Input
+                    id="firstName"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="John"
+                    className="h-10"
+                    required
+                  />
+                  <Input
+                    id="lastName"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Doe"
+                    className="h-10"
+                    required
+                  />
+                </div>
               </div>
+              
+
+             
               
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>

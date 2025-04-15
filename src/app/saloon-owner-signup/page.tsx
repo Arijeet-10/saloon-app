@@ -9,8 +9,19 @@ import { Button } from "@/components/ui/button";
 import { createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { app } from "@/lib/firebase";
-import { addDoc, collection, getFirestore } from "firebase/firestore";
+import { setDoc, doc, getFirestore } from "firebase/firestore";
 import Link from "next/link";
+import imageData from "@/assets/images/images.json";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// Assuming images.json looks like: { "images": ["url1.jpg", "url2.png", ...] }
+const images = imageData.images;
 
 export default function SaloonOwnerSignupPage() {
   const [shopName, setShopName] = useState("");
@@ -19,6 +30,8 @@ export default function SaloonOwnerSignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Store the selected image URL
+  const [selectedImage, setSelectedImage] = useState<string>(""); // Initialize as empty string for Select component
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -28,21 +41,34 @@ export default function SaloonOwnerSignupPage() {
     setError(null);
     setIsLoading(true);
 
+    // Basic validation: Ensure an image is selected
+    if (!selectedImage) {
+        setError("Please select a shop image style.");
+        toast({
+            title: "Missing Information",
+            description: "Please select a shop image style.",
+            variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+    }
+
     try {
       const auth = getAuth(app);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       const db = getFirestore(app);
-      const saloonsCollection = collection(db, "saloons");
+      const saloonDoc = doc(db, "saloons", user.uid);
 
-      await addDoc(saloonsCollection, {
-        ownerId: user.uid,
-        shopName,
-        location,
-        ownerName,
-        email,
-        createdAt: new Date().toISOString(),
+      await setDoc(saloonDoc, {
+          ownerId: user.uid,
+          shopName,
+          location,
+          ownerName,
+          email,
+          image: selectedImage, // Save the selected image URL
+          createdAt: new Date().toISOString(),
       });
 
       toast({
@@ -67,6 +93,18 @@ export default function SaloonOwnerSignupPage() {
     setError(null);
     setIsLoading(true);
 
+    // Also check image selection for Google sign-in if needed (optional, depends on flow)
+    // if (!selectedImage) {
+    //     setError("Please select a shop image style before signing in with Google.");
+    //     toast({
+    //         title: "Missing Information",
+    //         description: "Please select a shop image style.",
+    //         variant: "destructive",
+    //     });
+    //     setIsLoading(false);
+    //     return;
+    // }
+
     try {
       const auth = getAuth(app);
       const provider = new GoogleAuthProvider();
@@ -74,16 +112,20 @@ export default function SaloonOwnerSignupPage() {
       const user = userCredential.user;
 
       const db = getFirestore(app);
-      const saloonsCollection = collection(db, "saloons");
+      const saloonDoc = doc(db, "saloons", user.uid);
 
-      await addDoc(saloonsCollection, {
-        ownerId: user.uid,
-        shopName,
-        location,
-        ownerName,
-        email: user.email || "",
-        createdAt: new Date().toISOString(),
-      });
+      // You might want to fetch existing data if the user already exists via Google sign-in
+      // For simplicity, we're overwriting/creating here.
+      await setDoc(saloonDoc, {
+          ownerId: user.uid,
+          // Use form fields if filled, otherwise maybe prompt later or use defaults
+          shopName: shopName || `Shop for ${user.displayName || user.email}`,
+          location: location || "", // Might require location later
+          ownerName: ownerName || user.displayName || "Google User",
+          email: user.email || "",
+          image: selectedImage || images[0] || "", // Default to first image or empty if none selected
+          createdAt: new Date().toISOString(),
+      }, { merge: true }); // Use merge: true if you want to update existing docs without overwriting all fields
 
       toast({
         title: "Login successful",
@@ -114,7 +156,8 @@ export default function SaloonOwnerSignupPage() {
         <Card className="shadow-lg border-0">
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
+              {/* ... other input fields (shopName, location, ownerName, email, password) ... */}
+               <div className="space-y-2">
                 <Label htmlFor="shopName">Shop Name</Label>
                 <Input
                   id="shopName"
@@ -171,8 +214,52 @@ export default function SaloonOwnerSignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Minimum 6 characters"
                   required
+                  minLength={6} // Add minLength validation
                 />
               </div>
+
+              {/* --- Improved Image Selection --- */}
+              <div className="space-y-2">
+                <Label htmlFor="shopImage">Shop Image Style</Label>
+                <Select onValueChange={setSelectedImage} value={selectedImage}>
+                  <SelectTrigger
+                    id="shopImage"
+                    className="w-full h-auto min-h-[2.5rem] items-start py-2" // Adjust height and padding
+                  >
+                    {selectedImage ? (
+                       // Display selected image preview
+                       <div className="flex items-center gap-3 text-sm">
+                          <img
+                            src={selectedImage}
+                            alt="Selected shop style"
+                            className="h-10 w-10 rounded-md object-cover" // Preview size
+                          />
+                           {/* Find the index to display a user-friendly name */}
+                           <span>Selected: Style {images.indexOf(selectedImage) + 1}</span>
+                       </div>
+                    ) : (
+                       // Use SelectValue only for the placeholder text
+                       <SelectValue placeholder="Select a visual style for your shop" />
+                    )}
+                  </SelectTrigger>
+                  <SelectContent>
+                    {images.map((image, index) => (
+                      <SelectItem key={index} value={image}>
+                        {/* Display thumbnail and text in the dropdown */}
+                        <div className="flex items-center gap-3">
+                           <img
+                              src={image}
+                              alt={`Shop Style ${index + 1}`}
+                              className="h-8 w-8 rounded-md object-cover" // Thumbnail size
+                           />
+                           <span>Style {index + 1}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* --- End of Improved Image Selection --- */}
 
               {error && <p className="text-sm text-red-500">{error}</p>}
 
@@ -181,7 +268,8 @@ export default function SaloonOwnerSignupPage() {
               </Button>
             </form>
 
-            <div className="mt-6 flex items-center">
+            {/* ... Google Sign-in and Login Link ... */}
+             <div className="mt-6 flex items-center">
               <div className="flex-grow h-px bg-gray-200"></div>
               <span className="px-4 text-sm text-gray-500">or sign up with</span>
               <div className="flex-grow h-px bg-gray-200"></div>

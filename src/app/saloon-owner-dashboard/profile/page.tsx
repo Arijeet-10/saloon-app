@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback, ChangeEvent, FormEvent } from 'react';
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import { getFirestore, doc, updateDoc, getDoc, setDoc } from "firebase/firestore"; // Added setDoc for potential creation
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"; // Added deleteObject
+import { getFirestore, doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { app } from "@/lib/firebase";
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Loader2, UploadCloud, Edit, X as CancelIcon, Save } from "lucide-react"; // Added icons
+// Removed Avatar components, no longer needed for rectangular image
+import { Loader2, Edit, X as CancelIcon, Save } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton"; // For loading state
 
 // Define a type for the shop data for better type safety
@@ -66,24 +66,20 @@ export default function SaloonOwnerProfilePage() {
             if (shopDoc.exists()) {
                 const data = shopDoc.data() as ShopProfileData;
                 setShopData(data);
-                setOriginalShopData(data); // Store original data for cancel
+                setOriginalShopData(data);
             } else {
-                // If no data exists, maybe pre-fill with user info and allow initial save?
-                // Or create a basic document. Let's pre-fill for editing.
                 console.log("Shop data not found, creating initial structure for user:", currentUser.uid);
                  const initialData: ShopProfileData = {
-                    shopName: "My Saloon", // Default or prompt user later
+                    shopName: "My Saloon",
                     location: "",
                     ownerName: currentUser.displayName || "",
                     email: currentUser.email || "",
                     image: null,
                     ownerId: currentUser.uid,
                  };
-                 // Optionally create the doc immediately or wait for first save
-                 // await setDoc(shopDocRef, initialData); // Uncomment to create immediately
                  setShopData(initialData);
-                 setOriginalShopData(initialData); // Set original to the defaults
-                 setIsEditing(true); // Force edit mode if no data exists
+                 setOriginalShopData(initialData);
+                 setIsEditing(true);
                  toast({
                     title: "Setup Profile",
                     description: "Please complete your shop details.",
@@ -97,13 +93,12 @@ export default function SaloonOwnerProfilePage() {
                 description: error.message || "Could not load shop details.",
                 variant: "destructive",
             });
-            // Keep empty state on error, maybe offer retry?
             setShopData(initialShopData);
             setOriginalShopData(null);
         } finally {
             setIsLoading(false);
         }
-    }, [toast]); // Add toast to dependency array
+    }, [toast]);
 
     useEffect(() => {
         const auth = getAuth(app);
@@ -117,14 +112,12 @@ export default function SaloonOwnerProfilePage() {
             }
         });
 
-        // Cleanup preview URL on unmount
         return () => {
             unsubscribe();
             if (imagePreviewUrl) {
                 URL.revokeObjectURL(imagePreviewUrl);
             }
         };
-        // imagePreviewUrl is intentionally not in deps to avoid loop on revoke
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router, fetchShopData]);
 
@@ -142,14 +135,12 @@ export default function SaloonOwnerProfilePage() {
             const file = e.target.files[0];
             setImageFile(file);
 
-            // Create and set image preview
             if (imagePreviewUrl) {
-                URL.revokeObjectURL(imagePreviewUrl); // Clean up previous preview
+                URL.revokeObjectURL(imagePreviewUrl);
             }
             const previewUrl = URL.createObjectURL(file);
             setImagePreviewUrl(previewUrl);
         } else {
-            // Handle case where file selection is cancelled
             setImageFile(null);
             if (imagePreviewUrl) {
                 URL.revokeObjectURL(imagePreviewUrl);
@@ -160,11 +151,11 @@ export default function SaloonOwnerProfilePage() {
 
     const handleCancelEdit = () => {
         if (originalShopData) {
-            setShopData(originalShopData); // Revert to original data
+            setShopData(originalShopData);
         }
-        setImageFile(null); // Clear selected file
+        setImageFile(null);
         if (imagePreviewUrl) {
-            URL.revokeObjectURL(imagePreviewUrl); // Clean up preview
+            URL.revokeObjectURL(imagePreviewUrl);
         }
         setImagePreviewUrl(null);
         setIsEditing(false);
@@ -172,7 +163,7 @@ export default function SaloonOwnerProfilePage() {
 
     // --- Save Logic ---
     const handleSave = async (event: FormEvent) => {
-        event.preventDefault(); // Prevent default form submission
+        event.preventDefault();
         if (!user) {
             toast({ title: "Error", description: "Not authenticated.", variant: "destructive" });
             return;
@@ -183,40 +174,50 @@ export default function SaloonOwnerProfilePage() {
         const storage = getStorage(app);
         const shopDocRef = doc(db, "saloons", user.uid);
 
-        let newImageUrl: string | null = shopData.image ?? null; // Start with current image URL
+        let newImageUrl: string | null = shopData.image ?? null;
 
         try {
-            // 1. Upload new image if selected
             if (imageFile) {
-                // Optional: Delete old image before uploading new one
-                if (shopData.image) { try { await deleteObject(ref(storage, shopData.image)); } catch(delErr){ console.warn("Old image delete failed:", delErr)} }
+                if (shopData.image) {
+                    try {
+                       const oldImageRef = ref(storage, shopData.image);
+                       await deleteObject(oldImageRef);
+                       console.log("Old image deleted successfully");
+                    } catch(delErr: any) {
+                        // Log error but continue - maybe the old URL was invalid or permissions changed
+                        if (delErr.code !== 'storage/object-not-found') {
+                            console.warn("Old image delete failed:", delErr);
+                        }
+                    }
+                }
 
-                const imageRef = ref(storage, `saloon-images/${user.uid}/${Date.now()}_${imageFile.name}`); // Add timestamp for uniqueness
+                const imageRef = ref(storage, `saloon-images/${user.uid}/${Date.now()}_${imageFile.name}`);
                 const snapshot = await uploadBytes(imageRef, imageFile);
-                newImageUrl = await getDownloadURL(snapshot.ref); // Get the public URL
+                newImageUrl = await getDownloadURL(snapshot.ref);
             }
 
-            // 2. Prepare data for Firestore update
-            const dataToUpdate: ShopProfileData = {
-                ...shopData,
-                image: newImageUrl, // Use the potentially updated URL
-                ownerId: user.uid, // Ensure ownerId is set
+            const dataToUpdate: Partial<ShopProfileData> = { // Use Partial for updateDoc
+                shopName: shopData.shopName,
+                location: shopData.location,
+                ownerName: shopData.ownerName,
+                email: shopData.email,
+                image: newImageUrl,
+                ownerId: user.uid, // Ensure ownerId is always present
             };
 
-            // 3. Update Firestore document
-            // Use setDoc with merge: true if you want to ensure document creation if it was somehow deleted
-            // await setDoc(shopDocRef, dataToUpdate, { merge: true });
-            await updateDoc(shopDocRef, dataToUpdate); // Assumes doc exists
+             // Use setDoc with merge if creating/updating, or updateDoc if sure it exists
+            // Using updateDoc here assuming fetchShopData ensures it exists or creates it.
+            await updateDoc(shopDocRef, dataToUpdate);
 
-            // 4. Update local state to reflect saved data
-            setShopData(dataToUpdate); // Update form display state
-            setOriginalShopData(dataToUpdate); // Update original data baseline
-            setImageFile(null); // Clear the file input state
+            const updatedFullData = { ...shopData, ...dataToUpdate }; // Create the full data object for local state
+            setShopData(updatedFullData);
+            setOriginalShopData(updatedFullData);
+            setImageFile(null);
             if (imagePreviewUrl) {
-                 URL.revokeObjectURL(imagePreviewUrl); // Clean up preview after successful save
+                 URL.revokeObjectURL(imagePreviewUrl);
                  setImagePreviewUrl(null);
             }
-            setIsEditing(false); // Exit edit mode
+            setIsEditing(false);
 
             toast({
                 title: "Profile Updated",
@@ -235,9 +236,10 @@ export default function SaloonOwnerProfilePage() {
         }
     };
 
-    // Determine the source for the Avatar image
-    const avatarSrc = imagePreviewUrl || shopData.image;
-    const avatarFallback = shopData.shopName?.substring(0, 2).toUpperCase() || "SN"; // Use Shop Name initials
+    // Determine the source for the image display
+    const imageDisplaySrc = imagePreviewUrl || shopData.image;
+    // Fallback text (e.g., initials)
+    const fallbackText = shopData.shopName?.substring(0, 2).toUpperCase() || "SN";
 
     return (
         <div className="container mx-auto py-10 px-4 md:px-6">
@@ -254,10 +256,13 @@ export default function SaloonOwnerProfilePage() {
                         <Skeleton className="h-4 w-3/4 mt-1" />
                     </CardHeader>
                     <CardContent className="grid md:grid-cols-3 gap-6">
+                        {/* Skeleton for Image Area */}
                         <div className="flex flex-col items-center md:items-start space-y-4">
-                             <Skeleton className="h-32 w-32 rounded-full" />
+                             {/* Rectangular Skeleton */}
+                             <Skeleton className="w-full h-40 md:h-48 rounded-md" />
                              <Skeleton className="h-9 w-full" />
                         </div>
+                        {/* Skeleton for Form Fields */}
                         <div className="md:col-span-2 grid gap-4">
                             {[...Array(4)].map((_, i) => (
                                 <div key={i} className="grid gap-2">
@@ -275,7 +280,7 @@ export default function SaloonOwnerProfilePage() {
             ) : (
                  // --- Profile Card ---
                  <Card className="w-full max-w-3xl mx-auto">
-                     <form onSubmit={handleSave}> {/* Wrap content in form for semantics */}
+                     <form onSubmit={handleSave}>
                          <CardHeader>
                              <CardTitle>Shop Details</CardTitle>
                              <CardDescription>
@@ -283,30 +288,40 @@ export default function SaloonOwnerProfilePage() {
                              </CardDescription>
                          </CardHeader>
                          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-                             {/* Image Section (Left Column on Medium+ screens) */}
+                             {/* Image Section (Rectangular) */}
                              <div className="flex flex-col items-center md:items-start space-y-4">
-                                 <Label htmlFor="shopImage" className="text-center md:text-left font-medium">Shop Image</Label>
-                                 <Avatar className="h-32 w-32 ring-1 ring-muted">
-                                     <AvatarImage src={avatarSrc ?? undefined} alt={shopData.shopName || "Shop Image"} />
-                                     <AvatarFallback>{avatarFallback}</AvatarFallback>
-                                 </Avatar>
+                                 <Label htmlFor={isEditing ? "shopImage" : undefined} className="text-center md:text-left font-medium self-stretch">Shop Image</Label>
+                                 {/* Rectangular Image Display Container */}
+                                 <div className="w-full aspect-video md:aspect-[4/3] max-h-48 overflow-hidden rounded-md ring-1 ring-muted flex items-center justify-center bg-muted text-muted-foreground">
+                                     {imageDisplaySrc ? (
+                                         <img
+                                             src={imageDisplaySrc}
+                                             alt={shopData.shopName || "Shop Image"}
+                                             className="h-full w-full object-cover" // cover ensures the image fills the container without distortion
+                                         />
+                                     ) : (
+                                         // Fallback content when no image
+                                         <span className="text-2xl font-semibold">{fallbackText}</span>
+                                     )}
+                                 </div>
                                  {isEditing && (
                                      <div className="w-full">
                                          <Input
                                              id="shopImage"
                                              type="file"
-                                             accept="image/png, image/jpeg, image/webp" // Be specific about accepted types
+                                             accept="image/png, image/jpeg, image/webp"
                                              onChange={handleImageChange}
-                                             className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                                             className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
                                              disabled={isSaving}
                                          />
-                                          <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP up to 2MB.</p> {/* Example help text */}
+                                          <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP up to 2MB.</p>
                                      </div>
                                  )}
                              </div>
 
-                             {/* Details Section (Right Columns on Medium+ screens) */}
+                             {/* Details Section */}
                              <div className="md:col-span-2 grid gap-4">
+                                 {/* Input fields remain the same */}
                                  <div className="grid gap-1.5">
                                      <Label htmlFor="shopName">Shop Name</Label>
                                      <Input
@@ -315,7 +330,7 @@ export default function SaloonOwnerProfilePage() {
                                          value={shopData.shopName}
                                          onChange={handleInputChange}
                                          disabled={!isEditing || isSaving}
-                                         required // Add basic validation
+                                         required
                                      />
                                  </div>
                                  <div className="grid gap-1.5">
@@ -326,7 +341,7 @@ export default function SaloonOwnerProfilePage() {
                                          value={shopData.location}
                                          onChange={handleInputChange}
                                          disabled={!isEditing || isSaving}
-                                          placeholder="e.g., 123 Main St, Anytown"
+                                         placeholder="e.g., 123 Main St, Anytown"
                                      />
                                  </div>
                                  <div className="grid gap-1.5">
@@ -354,12 +369,13 @@ export default function SaloonOwnerProfilePage() {
                              </div>
                          </CardContent>
                          <CardFooter className="flex justify-end space-x-3 border-t pt-6">
+                            {/* Footer buttons remain the same */}
                              {isEditing ? (
                                  <>
                                      <Button type="button" variant="outline" onClick={handleCancelEdit} disabled={isSaving}>
                                          <CancelIcon className="h-4 w-4 mr-2" /> Cancel
                                      </Button>
-                                     <Button type="submit" disabled={isSaving}>
+                                     <Button type="submit" disabled={isSaving || !user}> {/* Disable save if no user */}
                                          {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                                          Save Changes
                                      </Button>

@@ -190,12 +190,23 @@ export default function LoginPage() {
                 </a>
               </p>
             </div>
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                Are you a Saloon Owner?{" "}
+                <a href="/saloon-owner-login" className="text-blue-600 hover:text-blue-800 font-medium">
+                  Login here
+                </a>
+              </p>
+            </div>
           </CardContent>
         </Card>
         
         <p className="text-xs text-center text-gray-500 mt-8">
           By signing in, you agree to our Terms of Service and Privacy Policy
         </p>
+        
+
+
       </div>
     </div>
   );

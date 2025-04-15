@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import { getFirestore, collection, query, where, getDocs, doc as firestoreDoc, getDoc, Timestamp } from "firebase/firestore"; // Keep Timestamp for date handling if needed
-import { app } from "@/lib/firebase";
 import { useRouter } from 'next/navigation';
+import { Trash2, AlertTriangle, CalendarDays } from "lucide-react";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
+import { getFirestore, collection, query, where, getDocs, doc as firestoreDoc, getDoc, Timestamp, deleteDoc } from "firebase/firestore";
+import { app } from "@/lib/firebase";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, CalendarDays } from "lucide-react"; // Removed Info icon if not used
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 // Define a type for Appointment data (createdAt removed)
 type AppointmentService = {
@@ -26,7 +28,7 @@ type Appointment = {
     date: string; // Store as formatted string after fetching
     time: string;
     selectedServices: AppointmentService[];
-    status?: string; // Optional status field
+    status?: string;
     // createdAt field removed
 };
 
@@ -37,9 +39,33 @@ export default function SaloonOwnerAppointmentsPage() {
     const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
+    const handleDeleteAppointment = useCallback(async (appointmentId: string) => {
+        if (!user) {
+            setError("You must be logged in to delete appointments.");
+            return;
+        }
+
+        const db = getFirestore(app);
+        try {
+            // Delete the appointment document
+            await deleteDoc(firestoreDoc(db, "appointments", appointmentId));
+
+            // Update the local state to remove the deleted appointment
+            setAppointments(currentAppointments =>
+                currentAppointments.filter(appointment => appointment.id !== appointmentId)
+            );
+            // Optionally, show a success message to the user
+            alert("Appointment deleted successfully!");
+        } catch (deletionError: any) {
+            console.error("Error deleting appointment:", deletionError);
+            setError(deletionError.message || "Failed to delete appointment. Please try again.");
+        }
+    }, [user]);
+
     const fetchAppointments = useCallback(async (currentUser: User) => {
         setLoading(true);
         setError(null);
+
         const db = getFirestore(app);
 
         try {
@@ -68,7 +94,12 @@ export default function SaloonOwnerAppointmentsPage() {
                     const customerDocRef = firestoreDoc(db, "users", data.userId);
                     const customerDoc = await getDoc(customerDocRef);
                     if (customerDoc.exists()) {
-                        customerName = customerDoc.data()?.displayName || customerDoc.data()?.email || "Customer";
+                        const customerData = customerDoc.data();
+                        const firstName = customerData?.firstName || "";
+                        const lastName = customerData?.lastName || "";
+                        customerName = (firstName + " " + lastName).trim() || "Customer";
+                    } else {
+                        console.warn(`Customer document for user ID ${data.userId} not found.`);
                     }
                 } catch (customerError) {
                     console.error(`Error fetching customer ${data.userId} for appointment ${docSnapshot.id}:`, customerError);
@@ -120,7 +151,7 @@ export default function SaloonOwnerAppointmentsPage() {
             setError(e.message || "An unexpected error occurred while fetching appointments.");
         } finally {
             setLoading(false);
-        }
+        }   
     }, []);
 
     useEffect(() => {
@@ -163,6 +194,7 @@ export default function SaloonOwnerAppointmentsPage() {
                             <TableHead className="w-[120px]">Date</TableHead>
                             <TableHead className="w-[100px]">Time</TableHead>
                             <TableHead>Services</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -173,6 +205,7 @@ export default function SaloonOwnerAppointmentsPage() {
                                     <TableCell><Skeleton className="h-5 w-full" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-3/4" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+                                    <TableCell className="text-right"><Skeleton className="h-5 w-20" /></TableCell>
                                 </TableRow>
                             ))
                         ) : appointments.length === 0 && !error ? (
@@ -202,6 +235,38 @@ export default function SaloonOwnerAppointmentsPage() {
                                         ) : (
                                             <span className="text-xs text-muted-foreground">No specific services listed</span>
                                         )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="ml-2"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete the appointment.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={async () => {
+                                                            await handleDeleteAppointment(appointment.id);
+                                                        }}
+                                                    >
+                                                        Continue
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+
                                     </TableCell>
                                 </TableRow>
                             ))

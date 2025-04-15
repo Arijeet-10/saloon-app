@@ -235,7 +235,7 @@ export default function BookAppointmentPage() {
                             <div className="flex flex-wrap gap-2">
                                 {selectedServices.map((service) => (
                                     <Badge key={service.id} variant="secondary">
-                                        {service.name} (${service.price.toFixed(2)})
+                                        {service.name} (₹{service.price.toFixed(2)})
                                     </Badge>
                                 ))}
                             </div>
@@ -243,7 +243,7 @@ export default function BookAppointmentPage() {
                             <p className="text-sm text-muted-foreground">No services selected or passed correctly.</p>
                         ) : null }
                          {selectedServices.length > 0 && (
-                             <p className="text-sm font-medium pt-2">Total Cost: ${totalCost.toFixed(2)}</p>
+                             <p className="text-sm font-medium pt-2">Total Cost: ₹{totalCost.toFixed(2)}</p>
                          )}
                     </div>
 

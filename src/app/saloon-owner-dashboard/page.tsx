@@ -377,7 +377,7 @@ export default function SaloonOwnerDashboard() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="newServicePrice">Price ($)</Label>
+                                    <Label htmlFor="newServicePrice">Price (₹)</Label>
                                     <Input
                                         id="newServicePrice"
                                         type="number"
@@ -476,7 +476,7 @@ export default function SaloonOwnerDashboard() {
                                                         // View Mode Cells
                                                         <>
                                                             <TableCell className="font-medium">{service.name}</TableCell>
-                                                            <TableCell className="text-right">${service.price.toFixed(2)}</TableCell>
+                                                            <TableCell className="text-right">₹{service.price.toFixed(2)}</TableCell>
                                                             <TableCell className="text-right space-x-2">
                                                                  <Button
                                                                     size="icon"

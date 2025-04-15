@@ -150,7 +150,7 @@ export default function SaloonServicePage() {
                                                             {service.description || "Professional service"}
                                                         </p>
                                                         <p className="text-lg font-semibold text-blue-600 ml-4">
-                                                            ${service.price}
+                                                        ₹{service.price}
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center mt-2">
@@ -203,7 +203,7 @@ export default function SaloonServicePage() {
                                                     <div className="flex-grow">
                                                         <h3 className="font-medium text-gray-800">{service.name}</h3>
                                                         <p className="text-sm text-gray-500">
-                                                            ${service.price}
+                                                        ₹{service.price}
                                                         </p>
                                                     </div>
                                                     <Button 
@@ -220,7 +220,7 @@ export default function SaloonServicePage() {
                                             <div className="border-t border-dashed pt-4 mt-4">
                                                 <div className="flex justify-between text-lg font-semibold mb-6">
                                                     <span>Total</span>
-                                                    <span className="text-blue-600">${totalCost.toFixed(2)}</span>
+                                                    <span className="text-blue-600">₹{totalCost.toFixed(2)}</span>
                                                 </div>
                                                 
                                                 <Button 

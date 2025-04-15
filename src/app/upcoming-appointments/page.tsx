@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { app } from "@/lib/firebase";
@@ -35,13 +35,27 @@ export default function UpcomingAppointmentsPage() {
         
         const appointmentsList = querySnapshot.docs.map(doc => {
           const data = doc.data();
+
+          let appointmentDate;
+          if (typeof data.date === 'string') {
+            // Assuming date string is in 'YYYY-MM-DD' format.  Adjust if needed.
+            appointmentDate = new Date(data.date);
+          } else if (data.date && typeof data.date.toDate === 'function') {
+            // Handle Firestore Timestamp
+            appointmentDate = data.date.toDate();
+          } else {
+            console.error("Invalid date format:", data.date);
+            appointmentDate = new Date(); // Provide a default or handle the error as needed
+          }
+
           return {
             id: doc.id,
             ...data,
-            date: data.date,
+            date: appointmentDate,
           };
         });
         
+
         // Sort appointments by date (newest first)
         appointmentsList.sort((a, b) => new Date(b.date) - new Date(a.date));
         
@@ -105,7 +119,7 @@ export default function UpcomingAppointmentsPage() {
 
       {appointments.length === 0 ? (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-          <p className="text-gray-500 text-lg mb-4">You don't have any upcoming appointments.</p>
+          <p className="text-gray-500 text-lg mb-4">You don&apos;t have any upcoming appointments.</p>
           <p className="text-gray-400">Book a new appointment to get started.</p>
         </div>
       ) : (
@@ -129,11 +143,11 @@ export default function UpcomingAppointmentsPage() {
                     <Calendar size={20} className="text-gray-500 mt-1" />
                     <div>
                       <p className="font-semibold">Date</p>
-                      <p>{appointmentDate.toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        month: 'long', 
-                        day: 'numeric',
-                        year: 'numeric'
+                      <p>{appointment.date.toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
                       })}</p>
                     </div>
                   </div>
@@ -155,7 +169,7 @@ export default function UpcomingAppointmentsPage() {
                           {appointment.selectedServices.map((service, index) => (
                             <li key={index} className="flex justify-between items-center">
                               <span>{service.name}</span>
-                              <span className="text-gray-600">${service.price}</span>
+                              <span className="text-gray-600">₹{service.price}</span>
                             </li>
                           ))}
                         </ul>
@@ -172,7 +186,7 @@ export default function UpcomingAppointmentsPage() {
                       <DollarSign size={18} className="text-gray-600 mr-1" />
                       <span className="font-semibold">Total</span>
                     </div>
-                    <span className="font-bold">${totalPrice.toFixed(2)}</span>
+                    <span className="font-bold">₹{totalPrice.toFixed(2)}</span>
                   </CardFooter>
                 )}
               </Card>
