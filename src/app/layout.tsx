@@ -21,8 +21,8 @@ export const metadata: Metadata = {
     icon: '/favicon.ico', // or '/favicon.ico' if you converted it
   },
   openGraph: {
-    title: 'Your New Title Here',
-    description: 'Your updated description here.',
+    title: 'Bookify – Smart Salon Booking Made Simple',
+    description: 'Bookify lets you discover and book salon services anytime, anywhere. Choose your favorite salon, schedule appointments in seconds, and enjoy a smooth, hassle-free grooming experience.',
     
     url: 'https://saloon-app-dq3i.onrender.com', // replace with your actual site URL
     siteName: 'Your Site Name',
