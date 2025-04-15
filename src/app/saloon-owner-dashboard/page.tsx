@@ -33,6 +33,14 @@ type ShopData = {
     image?: string | null; // Add the image field
 };
 
+type AvailableHours = {
+    open: string;
+    close: string;
+};
+
+type WeeklyHours = Record<'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday', AvailableHours>;
+
+
 export default function SaloonOwnerDashboard() {
     const [services, setServices] = useState<Service[]>([]);
     const [newServiceName, setNewServiceName] = useState("");
@@ -40,6 +48,10 @@ export default function SaloonOwnerDashboard() {
     const [editServiceId, setEditServiceId] = useState<string | null>(null);
     const [editServiceName, setEditServiceName] = useState("");
     const [editServicePrice, setEditServicePrice] = useState("");
+
+    const [availableHours, setAvailableHours] = useState<WeeklyHours>({
+      Monday: { open: '09:00', close: '18:00' }, Tuesday: { open: '09:00', close: '18:00' }, Wednesday: { open: '09:00', close: '18:00' }, Thursday: { open: '09:00', close: '18:00' }, Friday: { open: '09:00', close: '20:00' }, Saturday: { open: '10:00', close: '20:00' }, Sunday: { open: '10:00', close: '17:00' },
+    });
 
     const [shopId, setShopId] = useState<string | null>(null);
     const [shopData, setShopData] = useState<ShopData | null>(null);
@@ -50,6 +62,7 @@ export default function SaloonOwnerDashboard() {
     const [isAddingService, setIsAddingService] = useState(false);
     const [isUpdatingService, setIsUpdatingService] = useState(false);
     const [isDeletingService, setIsDeletingService] = useState<string | null>(null); // Store ID being deleted
+
 
     const router = useRouter();
     const { toast } = useToast();
@@ -62,7 +75,7 @@ export default function SaloonOwnerDashboard() {
         const shopDocRef = firestoreDoc(db, "saloons", currentUser.uid);
 
         try {
-            const shopDoc = await getDoc(shopDocRef);
+        const shopDoc = await getDoc(shopDocRef);
             let currentShopData: ShopData | null = null;
             let currentShopId = currentUser.uid; // Assume UID is shop ID
 
@@ -70,6 +83,8 @@ export default function SaloonOwnerDashboard() {
                 currentShopData = shopDoc.data() as ShopData;
                 setShopData(currentShopData);
                 setShopId(currentShopId);
+                // Assuming availableHours is part of shopData now
+                setAvailableHours(currentShopData.availableHours || availableHours);
             } else {
                  // Auto-create a basic profile if none exists.
                  // Consider redirecting to a setup page for a better UX in a real app.
@@ -140,6 +155,7 @@ export default function SaloonOwnerDashboard() {
 
         return () => unsubscribe(); // Cleanup subscription on unmount
     }, [router, fetchShopAndServices]); // Add fetchShopAndServices to dependencies
+
 
     // --- Service Actions ---
 
@@ -274,6 +290,47 @@ export default function SaloonOwnerDashboard() {
             setIsDeletingService(null); // Reset deleting ID
         }
     };
+
+    // --- Available Hours ---
+
+    const handleHoursChange = (day: keyof WeeklyHours, type: 'open' | 'close', time: string) => {
+        setAvailableHours({
+            ...availableHours,
+            [day]: {
+                ...availableHours[day],
+                [type]: time,
+            },
+        });
+    };
+
+    const handleSaveHours = async () => {
+      if (!shopId) return;
+
+      const db = getFirestore(app);
+      const shopDocRef = firestoreDoc(db, "saloons", shopId);
+
+      try {
+          await updateDoc(shopDocRef, {
+              availableHours: availableHours,
+          });
+
+          // Optimistically update UI
+          setShopData(prevData => prevData ? { ...prevData, availableHours } : prevData);
+
+          toast({
+              title: "Available Hours Updated",
+              description: "Your available hours have been successfully updated.",
+          });
+      } catch (error: any) {
+          console.error("Error updating available hours:", error);
+          toast({
+              title: "Error Updating Hours",
+              description: error.message,
+              variant: "destructive",
+          });
+      }
+  };
+
 
     // --- Render Logic ---
 
@@ -513,6 +570,40 @@ export default function SaloonOwnerDashboard() {
 
                     </CardContent>
                 </Card>
+
+                {/* Available Hours Section */}
+              <Card>
+                  <CardHeader>
+                      <CardTitle>Available Hours</CardTitle>
+                      <CardDescription>Set your saloon's operating hours for each day of the week.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {Object.entries(availableHours).map(([day, hours]) => (
+                              <div key={day} className="space-y-2">
+                                  <Label className="font-medium">{day}</Label>
+                                  <div className="flex space-x-2">
+                                      <Input
+                                          type="time"
+                                          value={hours.open}
+                                          onChange={(e) => handleHoursChange(day as keyof WeeklyHours, 'open', e.target.value)}
+                                          className="w-32"
+                                      />
+                                      <Input
+                                          type="time"
+                                          value={hours.close}
+                                          onChange={(e) => handleHoursChange(day as keyof WeeklyHours, 'close', e.target.value)}
+                                          className="w-32"
+                                      />
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
+                  </CardContent>
+                  <CardFooter>
+                      <Button onClick={handleSaveHours}>Save Hours</Button>
+                  </CardFooter>
+              </Card>
             </main>
         </div>
     );

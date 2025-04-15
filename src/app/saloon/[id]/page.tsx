@@ -5,8 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Scissors, X, Clock, Plus, ShoppingBag, Calendar } from "lucide-react";
-import { getFirestore, collection, getDocs, doc, getDoc } from "firebase/firestore";
-import { app } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { Badge } from "@/components/ui/badge";
 
 export default function SaloonServicePage() {
@@ -23,17 +23,25 @@ export default function SaloonServicePage() {
         const fetchSaloonData = async () => {
             if (saloonId) {
                 setIsLoading(true);
-                const db = getFirestore(app);
-                
+
                 try {
                     // Fetch saloon info
                     const saloonDocRef = doc(db, "saloons", saloonId);
                     const saloonDocSnap = await getDoc(saloonDocRef);
-                    
+
                     if (saloonDocSnap.exists()) {
-                        setSaloonInfo({ id: saloonDocSnap.id, ...saloonDocSnap.data() });
+                        const saloonData = saloonDocSnap.data();
+                        console.log('Saloon Data:', saloonData);
+
+                        const availableHours = saloonData.availableHours;
+                        if (availableHours === undefined) {
+                            console.log('available hours undefined');
+                        }
+                        console.log('Available Hours:', availableHours);
+
+                        setSaloonInfo({ id: saloonDocSnap.id, ...saloonData });
                     }
-                    
+
                     // Fetch services
                     const servicesCollection = collection(db, "saloons", saloonId, "services");
                     const servicesSnapshot = await getDocs(servicesCollection);
@@ -61,17 +69,17 @@ export default function SaloonServicePage() {
     };
 
     const totalCost = selectedServices.reduce((sum, service) => sum + (service.price || 0), 0);
-    
+
     const handleBookAppointment = () => {
         router.push(`/saloon/${saloonId}/book?services=${encodeURIComponent(JSON.stringify(selectedServices))}`);
     };
-    
+
     // Get unique categories
     const categories = ['All', ...new Set(saloonServices.map(service => service.category || 'Other'))];
-    
+
     // Filter services by category
-    const filteredServices = activeCategory === 'All' 
-        ? saloonServices 
+    const filteredServices = activeCategory === 'All'
+        ? saloonServices
         : saloonServices.filter(service => service.category === activeCategory);
 
     if (isLoading) {
@@ -91,10 +99,24 @@ export default function SaloonServicePage() {
                     <p className="text-blue-100 mb-2">{saloonInfo?.location || 'Location unavailable'}</p>
                     <div className="flex items-center">
                         <Clock className="h-4 w-4 mr-2" />
-                        <span className="text-sm">{saloonInfo?.openingHours || 'Hours unavailable'}</span>
+                        <span className="text-sm">
+                            {saloonInfo?.availableHours ? (
+                                Object.entries(saloonInfo.availableHours).map(([day, hours]) => (
+                                    hours ? (
+                                        <React.Fragment key={day}>
+                                            {day}: {hours.open} - {hours.close} &nbsp;
+                                        </React.Fragment>
+                                    ) : null
+                                ))
+                            ) : 'Hours unavailable'}
+                        </span>
                     </div>
                 </div>
             </div>
+
+
+
+
 
             <div className="container mx-auto px-4">
                 {/* Category tabs */}
@@ -132,8 +154,8 @@ export default function SaloonServicePage() {
                                 ) : (
                                     <div className="grid gap-4">
                                         {filteredServices.map((service) => (
-                                            <div 
-                                                key={service.id} 
+                                            <div
+                                                key={service.id}
                                                 className="bg-white border border-gray-100 rounded-lg p-4 flex items-center justify-between hover:shadow-md transition-shadow"
                                             >
                                                 <div className="flex-grow">
@@ -150,7 +172,7 @@ export default function SaloonServicePage() {
                                                             {service.description || "Professional service"}
                                                         </p>
                                                         <p className="text-lg font-semibold text-blue-600 ml-4">
-                                                        ₹{service.price}
+                                                            ₹{service.price}
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center mt-2">
@@ -160,8 +182,8 @@ export default function SaloonServicePage() {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <Button 
-                                                    size="sm" 
+                                                <Button
+                                                    size="sm"
                                                     className="ml-4 flex-shrink-0"
                                                     onClick={() => handleAddService(service)}
                                                     disabled={selectedServices.some(s => s.id === service.id)}
@@ -203,28 +225,28 @@ export default function SaloonServicePage() {
                                                     <div className="flex-grow">
                                                         <h3 className="font-medium text-gray-800">{service.name}</h3>
                                                         <p className="text-sm text-gray-500">
-                                                        ₹{service.price}
+                                                            ₹{service.price}
                                                         </p>
                                                     </div>
-                                                    <Button 
-                                                        size="sm" 
-                                                        variant="ghost" 
-                                                        className="text-gray-500 hover:text-red-500" 
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="text-gray-500 hover:text-red-500"
                                                         onClick={() => handleRemoveService(service)}
                                                     >
                                                         <X className="h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             ))}
-                                            
+
                                             <div className="border-t border-dashed pt-4 mt-4">
                                                 <div className="flex justify-between text-lg font-semibold mb-6">
                                                     <span>Total</span>
                                                     <span className="text-blue-600">₹{totalCost.toFixed(2)}</span>
                                                 </div>
-                                                
-                                                <Button 
-                                                    className="w-full h-12 text-base" 
+
+                                                <Button
+                                                    className="w-full h-12 text-base"
                                                     onClick={handleBookAppointment}
                                                     disabled={selectedServices.length === 0}
                                                 >

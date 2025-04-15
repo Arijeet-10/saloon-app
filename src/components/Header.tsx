@@ -55,7 +55,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">Saloon Elite</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">Bookify</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -67,6 +67,10 @@ const Header = () => {
             <Link href="/upcoming-appointments" className="text-gray-700 hover:text-blue-600 font-medium flex items-center">
               <Calendar size={18} className="mr-1" />
               <span>Appointments</span>
+            </Link>
+            <Link href='/categories' className="text-gray-700 hover:text-blue-600 font-medium flex items-center">
+               {/* <Calendar size={18} className="mr-1" /> */}
+               Categories
             </Link>
             {user && (
               <DropdownMenu>
@@ -118,7 +122,14 @@ const Header = () => {
                 className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-md font-medium"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Appointments
+               Appointments
+              </Link>
+              <Link 
+                href="/categories" 
+                className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-md font-medium"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+               Categories
               </Link>
               {user && (
                 <Button 

@@ -96,7 +96,9 @@ export default function SaloonOwnerAppointmentsPage() {
                     if (customerDoc.exists()) {
                         const customerData = customerDoc.data();
                         const firstName = customerData?.firstName || "";
-                        const lastName = customerData?.lastName || "";
+                        const lastName = customerData?.lastName || ""; 
+                        let customerName;
+                        if(customerData.fullName) {customerName = customerData.fullName} else{ customerName = (firstName + " " + lastName).trim() || "Customer";}
                         customerName = (firstName + " " + lastName).trim() || "Customer";
                     } else {
                         console.warn(`Customer document for user ID ${data.userId} not found.`);
